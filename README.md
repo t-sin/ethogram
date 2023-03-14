@@ -40,6 +40,8 @@ A DSL for `test-forms` is TBD.
 
 ### Structurizing tests
 
+TODO: Nesting seems ugly. But are there any solution? Annotations like [cl-annot](https://github.com/m2ym/cl-annot)? (Btw [this article](https://y2q-actionman.hatenablog.com/entry/2019/12/20/) discusses about cl-annot's problems.)
+
 ```lisp
 ;; test subject function
 (defun my-evenp (n)
