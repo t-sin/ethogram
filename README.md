@@ -21,7 +21,7 @@ The definitions for a system are composed of some groups like *target* and *cont
 
 ### Defining a relation
 
-A DSL for `test-forms` is TBD. Should it be implemented as another operator...? I think expectation matchers should be separated `relation`/`behavior` and be extensible.
+A DSL for `test-forms` is TBD. Should it be implemented as another operator...? I think expectation matchers should be separated from `relation`/`behavior` and be extensible.
 
 ```lisp
 (relation "for an integer, it returns t"
