@@ -63,6 +63,23 @@ TODO: Nesting seems ugly. But are there any solution? Annotations like [cl-annot
       ...)))
 ```
 
+### Lifecycle of test suites
+
+(WIP: it's sufficient?)
+
+*Ethogram* basically runs all tests defined by `relation` and `behavior`. Running tests progress like this:
+
+1. invoke `setup` defined at top-level before running tests
+2. for each targets:
+    1. invoke `setup` defined in the `target`
+    2. for each contexts:
+        1. invoke `setup` defined in the `context`
+        2. for each tests defined by `relation` and `behavior`:
+            1. run the test
+        3. invoke `teardown` defined in the `context`
+    3. invoke `teardown` defined in the `target`
+3. invoke `teardown` after running tests
+
 ### Lazy evaluation and memoization
 
 A way to enable lazy evaluation and memoization in most other languages cannot use native assignment syntax. In [RSpec](https://rspec.info) on [Ruby](https://www.ruby-lang.org/), that realized with blocks (leical closures) like this: `let(:name) { obj.make.some.value }`. It's because two reasons; a) a syntax for assignment is native, and b) it cannot be modifiable by users. On the other hand, in Common Lisp, there is no assignment syntaxes anyway. Simply that is appears as binding forms (implemnted as special forms or macros) or `setf`-related forms. So the realization of lazy evaluation and memoization is very eazy.
