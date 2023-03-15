@@ -8,8 +8,12 @@
 
 ## Features
 
-- Several ways to define tests
+- Several kinds of tests
+    - unit tests (called "relations")
+    - behaviors
+    - (and anymore?)
 - Grouping some tests
+- Hooks in the lifecyles of tests
 - Useful expectation matchers
 - (Basic mocking frameworks?) (...is what?)
 
