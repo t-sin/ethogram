@@ -76,7 +76,7 @@ Should it be implemented as another operator...? I think expectation matchers sh
   (zerop (mod n 2)))
 
 ;; structurize tests
-(test :about "A function: my-evenp"
+(test :about "A function: my-evenp"        ; is it good that "a function" is keyword, for grouping or something...?
   (test :when "an input is a number"
         :with (:parallel t)
     (test :relation "for an even number, returns t"
