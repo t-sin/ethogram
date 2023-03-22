@@ -9,9 +9,9 @@
 ## Features
 
 - Several kinds of tests
-    - unit tests (called "relations")
-    - behaviors
-    - (and anymore?)
+    - *relations*: checks target's outputs
+    - *behaviors*: checks target's outputs with its side effects
+    - ...and anymore?
 - Grouping some tests
 - Hooks in the lifecyles of tests
 - Useful modules
@@ -32,26 +32,39 @@ The definitions for a system are composed of some groups like *target* and *cont
 
 ### Defining a relation
 
-A DSL for `test-forms` is TBD. Should it be implemented as another operator...? I think expectation matchers should be separated from `relation`/`behavior` and be extensible.
+Should it be implemented as another operator...? I think expectation matchers should be separated from `relation`/`behavior` and be extensible.
 
 ```lisp
-(relation "for an integer, it returns t"
+(test :relation "for an integer, it returns t"
+      :with opt-plist
   test-forms...)
 ```
 
 ### Defining a behavior
 
-A DSL for `test-forms` is TBD.
-
 ```lisp
 ;; some examples here
-(behavior "description"
+(test :behavior "description"
+      :with opt-plist
   test-forms...)
+```
+
+### The basi form of `test` macro
+
+(WIP: I feel it should be a macro because of avoiding evaluation)
+
+```lisp
+(test :testing-context                       ; '(member :about :when :relation :behavior)
+      "blah blah blah"                       ; 'string
+      :with (:parallel t                     ; '(member t nil)
+             :ordered t                      ; '(member t nil)
+             ...)
+  forms-for-its-context...)
 ```
 
 ### Structurizing tests
 
-TODO: Nesting seems ugly. But are there any solution? Annotations like [cl-annot](https://github.com/m2ym/cl-annot)? (Btw [this article](https://y2q-actionman.hatenablog.com/entry/2019/12/20/) discusses about cl-annot's problems.)
+(WIP: Nesting seems ugly. But are there any solution? Annotations like [cl-annot](https://github.com/m2ym/cl-annot)? (Btw [this article](https://y2q-actionman.hatenablog.com/entry/2019/12/20/) discusses about cl-annot's problems.))
 
 ```lisp
 ;; test subject function
@@ -59,18 +72,19 @@ TODO: Nesting seems ugly. But are there any solution? Annotations like [cl-annot
   (zerop (mod n 2)))
 
 ;; structurize tests
-(target "A function: my-evenp"
-  (context "when an input is a number"
-    (relation "for an even number, returns t"
+(test :about "A function: my-evenp"
+  (test :when "an input is a number"
+        :with (:parallel t)
+    (test :relation "for an even number, returns t"
       :subject #'my-evenp
       :for 0 :returns t
       :for 2 :returns t)
 
-    (relation "for an odd number, returns nil"
+    (test :relation "for an odd number, returns nil"
       ...))
 
-  (context "when an input is not a number"
-    (relation "it signals a condition"
+  (test :when "an input is not a number"
+    (test :relation "it signals a condition"
       ...)))
 ```
 
@@ -97,13 +111,18 @@ A way to enable lazy evaluation and memoization in most other languages cannot u
 
 ```lisp
 ;; `foo` is evaluated when called subject first time, evaluated at once and memoized
-(target "A function: *10-with-something"
+(test :about "A function: *10-with-something"
   (let.lazy ((foo (make-instance 'foo)))
-    (relation "hoge"
+    (test :relation "hoge"
       :subject (lambda (n) (*10-with-something foo n))
       :for 10 :returns 100
       :for 20 :returns 200)))
 ```
+
+## References
+
+- [Rspec](https://github.com/rspec/rspec-metagem): BDD-supported testing framework for Ruby
+- [Ginkgo](https://github.com/onsi/ginkgo): Modern testing framework for Go, including BDD features
 
 ## Author
 
