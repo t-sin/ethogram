@@ -58,7 +58,7 @@ Should it be implemented as another operator...? I think expectation matchers sh
 (WIP: I feel it should be a macro because of avoiding evaluation)
 
 ```lisp
-(test :testing-context                       ; '(member :about :when :relation :behavior)
+(test :testing-context                       ; '(member :for :about :when :relation :behavior)
       "blah blah blah"                       ; 'string
       :with (:parallel t                     ; '(member t nil)
              :ordered t                      ; '(member t nil)
@@ -116,11 +116,11 @@ A way to enable lazy evaluation and memoization in most other languages cannot u
 ```lisp
 ;; `foo` is evaluated when called subject first time, evaluated at once and memoized
 (test :about "A function: *10-with-something"
-  (let.lazy ((foo (make-instance 'foo)))
-    (test :relation "hoge"
-      :subject (lambda (n) (*10-with-something foo n))
-      :for 10 :returns 100
-      :for 20 :returns 200)))
+      :let ((foo (make-instance 'foo))
+  (test :relation "hoge"
+    :subject (lambda (n) (*10-with-something foo n))
+    :for 10 :returns 100
+    :for 20 :returns 200)))
 ```
 
 ## References
