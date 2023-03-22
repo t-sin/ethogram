@@ -14,8 +14,13 @@
     - (and anymore?)
 - Grouping some tests
 - Hooks in the lifecyles of tests
-- Useful expectation matchers
-- (Basic mocking frameworks?) (...is what?)
+- Useful modules
+    - expectation matchers
+        - needless? because of [cl-hamcrest](https://github.com/40ants/cl-hamcrest)?
+    - mocking frameworks
+        - needless? because of [cl-mock](https://github.com/Ferada/cl-mock) or [mockingbird](https://github.com/Chream/mockingbird)?
+    - printing difference between expected and actual
+        - I cannot found about this...
 
 ## How to define tests
 
