@@ -11,6 +11,7 @@
 - Several kinds of tests
     - *relations*: checks target's outputs
     - *behaviors*: checks target's outputs with its side effects
+    - *scenarios*: large behaviors?
     - ...and anymore?
 - Grouping some tests
 - Hooks in the lifecyles of tests
@@ -46,7 +47,10 @@ Should it be implemented as another operator...? I think expectation matchers sh
 ;; some examples here
 (test :behavior "description"
       :with opt-plist
-  test-forms...)
+  :step "do step1"                 ; make a label behavior-forms1 below. :step is temporal name...
+  behavior-forms1...
+  :step "do step2"
+  behavior-forms2...)
 ```
 
 ### The basi form of `test` macro
