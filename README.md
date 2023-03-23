@@ -28,51 +28,83 @@
 
 ## How to define tests
 
-
 With *Ethogram*, tests are defined by `test` macro and its DSL. The basic form of `test` macro is like this:
 
 (WIP: I feel it should be a macro because of avoiding evaluation)
 
 ```lisp
-(test :testing-context
-      "blah blah blah"                   ; a string
-  :with (:parallel t                     ; t or nil
-         :ordered t                      ; t or nil
-  :setup form...
-  :teardown form...
-  testing-forms-for-its-context...)
+(test :testing-context "description about the tested here"
+  :subject form
+  :input form
+  :expect form)
 ```
 
-`test` macro has several ways to define tests via *testing context*. These allows us to describe contexts for what. *Testing contexts* are:
+Its detailed form is like this:
+
+```lisp
+(test :testing-context "describe what's tested"
+  [:subject form]
+  [:input form]
+  [:expect (matcher-form or form)]
+  [:with (:parallel t          ; t or nil
+          :ordered t           ; t or nil
+          ...)]
+  [:setup form...]
+  [:teardown form...])
+```
+
+`test` macro has several ways to define tests via *testing contexts*. These allows us to describe contexts for what. *Testing contexts* are:
 
 - targets: `:for`, `:about`
 - contexts: `:when`, `:in` (in?)
 - testcases: `:unit`, `:behavior`, `:scenario`
 
-*Testcases* describe a type of the test describing here. `:unit` describes a small tests for an operator or a small unit, mostly without side effects. `:behavior` describes behaviors of the test targets with side effects. `:scenario` is like `:behavior` but checks more larger, more closer to users points of view.
+*Testcases* describe a type of the test describing here. `:unit` describes a small tests for an operator or a small unit, mostly without side effects. `:behavior` describes **one behavior** of the test subject with side effects. `:scenario` is like `:behavior` but checks more larger, more closer to users points of view.
 
 ### Defining a unit
 
 ```lisp
-(test :unit "for an integer, it returns t"
-  test-forms...)
+(defun my-integer-p (n) ...)  ; a test subject
+
+(test :about "A function my-integer-p returns t for integers"
+  (test :unit #'my-integer-p
+    :input 0 :expect t)
+  (test :unit #'my-integer-p
+    :input 10 :expect t)
 ```
 
 ### Defining a behavior
 
 ```lisp
-;; some examples here
-(test :behavior "description"
-      :with opt-plist
-  :step "do step1"                 ; make a label behavior-forms1 below. :step is temporal name...
-  behavior-forms1...
-  :step "do step2"
-  behavior-forms2...)
+(defun all-books () ...)
+(defun create-book (title author) ...)  ; a test subject
+
+(test :behavior "A book created"
+  :subject #'create-book
+  :input ("The Hitchhiker's Guide to Galaxy" "Daglas Adams")
+  :expect :before(zero (length (all-books)))
+  :expect :after (= (length (all-books)) 1))
 ```
 
 ### Defining a scenario
 
 (WIP: useful feature aminig to describe scenarios)
+
+```lisp
+(test :about "The book database application"
+  (test :scenario "The user registers them book"
+    :step "The user gets an empty book list"         ; make a label behavior-forms1 below. :step is temporal name...
+    forms...
+
+    :step "The user registers a book"
+    forms...
+
+    :step "The user checks that the book is registered"
+    forms...)
+
+  (test :scenario "The user searches a book"
+    ...))
+```
 
 ### Structurizing tests
 
