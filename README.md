@@ -30,8 +30,6 @@
 
 With *Ethogram*, tests are defined by `test` macro and its DSL. The basic form of `test` macro is like this:
 
-(WIP: I feel it should be a macro because of avoiding evaluation)
-
 ```lisp
 (test :testing-context "description about the tested here"
   :subject form
@@ -39,7 +37,7 @@ With *Ethogram*, tests are defined by `test` macro and its DSL. The basic form o
   :expect form)
 ```
 
-Its detailed form is like this:
+`test` is a macro to prevent evaluation. A DSL for `test` is detailed below:
 
 ```lisp
 (test :testing-context "describe what's tested"
