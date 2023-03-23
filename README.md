@@ -9,9 +9,9 @@
 ## Features
 
 - Several kinds of tests
-    - *relations*: checks target's outputs
+    - *units*: checks samll target's outputs, mostly without side effects
     - *behaviors*: checks target's outputs with its side effects
-    - *scenarios*: large behaviors?
+    - *scenarios*: like behaviors, but more large and needs more user's point of view?
     - ...and anymore?
 - Structurized tests
 - Hooks in the lifecyles of tests
@@ -28,17 +28,33 @@
 
 ## How to define tests
 
-*Ethogram* has several ways to define tests. One of them is for define a relation between inputs and outputs of an operator. Second one of them is for define a behavior of some operators. (and more test types...?.)
 
-The definitions for a system are composed of some groups like *target* and *context*.
+With *Ethogram*, tests are defined by `test` macro and its DSL. The basic form of `test` macro is like this:
 
-### Defining a relation
-
-Should it be implemented as another operator...? I think expectation matchers should be separated from `relation`/`behavior` and be extensible.
+(WIP: I feel it should be a macro because of avoiding evaluation)
 
 ```lisp
-(test :relation "for an integer, it returns t"
-      :with opt-plist
+(test :testing-context
+      "blah blah blah"                   ; a string
+  :with (:parallel t                     ; t or nil
+         :ordered t                      ; t or nil
+  :setup form...
+  :teardown form...
+  testing-forms-for-its-context...)
+```
+
+`test` macro has several ways to define tests via *testing context*. These allows us to describe contexts for what. *Testing contexts* are:
+
+- targets: `:for`, `:about`
+- contexts: `:when`, `:in` (in?)
+- testcases: `:unit`, `:behavior`, `:scenario`
+
+*Testcases* describe a type of the test describing here. `:unit` describes a small tests for an operator or a small unit, mostly without side effects. `:behavior` describes behaviors of the test targets with side effects. `:scenario` is like `:behavior` but checks more larger, more closer to users points of view.
+
+### Defining a unit
+
+```lisp
+(test :unit "for an integer, it returns t"
   test-forms...)
 ```
 
@@ -54,18 +70,9 @@ Should it be implemented as another operator...? I think expectation matchers sh
   behavior-forms2...)
 ```
 
-### The basi form of `test` macro
+### Defining a scenario
 
-(WIP: I feel it should be a macro because of avoiding evaluation)
-
-```lisp
-(test :testing-context                       ; '(member :for :about :when :relation :behavior)
-      "blah blah blah"                       ; 'string
-      :with (:parallel t                     ; '(member t nil)
-             :ordered t                      ; '(member t nil)
-             ...)
-  forms-for-its-context...)
-```
+(WIP: useful feature aminig to describe scenarios)
 
 ### Structurizing tests
 
@@ -80,16 +87,16 @@ Should it be implemented as another operator...? I think expectation matchers sh
 (test :about "A function: my-evenp"        ; is it good that "a function" is keyword, for grouping or something...?
   (test :when "an input is a number"
         :with (:parallel t)
-    (test :relation "for an even number, returns t"
+    (test :unit "for an even number, returns t"
       :subject #'my-evenp
       :for 0 :returns t
       :for 2 :returns t)
 
-    (test :relation "for an odd number, returns nil"
+    (test :unit "for an odd number, returns nil"
       ...))
 
   (test :when "an input is not a number"
-    (test :relation "it signals a condition"
+    (test :behavior "it signals a condition"
       ...)))
 ```
 
@@ -118,7 +125,7 @@ A way to enable lazy evaluation and memoization in most other languages cannot u
 ;; `foo` is evaluated when called subject first time, evaluated at once and memoized
 (test :about "A function: *10-with-something"
       :let ((foo (make-instance 'foo))
-  (test :relation "hoge"
+  (test :unit "hoge"
     :subject (lambda (n) (*10-with-something foo n))
     :for 10 :returns 100
     :for 20 :returns 200)))
