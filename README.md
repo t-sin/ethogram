@@ -23,6 +23,8 @@
         - needless? because of [cl-mock](https://github.com/Ferada/cl-mock) or [mockingbird](https://github.com/Chream/mockingbird)?
     - printing difference between expected and actual
         - I cannot found about this...
+    - test data templating
+        - like [factory_bot](https://github.com/thoughtbot/factory_bot) for Ruby
 - Fast testing
     - but how? by what's infomation?
 
