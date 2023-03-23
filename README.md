@@ -13,8 +13,9 @@
     - *behaviors*: checks target's outputs with its side effects
     - *scenarios*: large behaviors?
     - ...and anymore?
-- Grouping some tests
+- Structurized tests
 - Hooks in the lifecyles of tests
+- Introspection in the REPL
 - Useful modules
     - expectation matchers
         - needless? because of [cl-hamcrest](https://github.com/40ants/cl-hamcrest)?
