@@ -4,7 +4,7 @@
 
 ## Status
 
-**CURRENTLY CONSIDERING** specs in [design-doc.md](design-doc.md).
+**CURRENTLY WRITING [design-doc.md](design-doc.md)**
 
 ## Author
 
