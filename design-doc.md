@@ -10,6 +10,12 @@ CURRENTLY WRITING
 
 ## WIP: Objective
 
+## WIP: Required Specs
+
+### Basic concepts
+
+## WIP: Background
+
 ### Motivation
 
 ### Required features
@@ -35,8 +41,6 @@ CURRENTLY WRITING
 ### Alternatives considered (needed?)
 
 ## WIP: Required Specs
-
-### Basic concepts 
 
 With *Ethogram*, tests are defined by `test` macro and its DSL. The basic form of `test` macro is like this:
 
