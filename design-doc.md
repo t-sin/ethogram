@@ -1,4 +1,4 @@
-# Design Doc for *Ethogram* testing framework
+# Design Doc for the *Ethogram* testing framework
 
 ## Author
 
