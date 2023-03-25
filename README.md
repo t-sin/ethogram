@@ -8,12 +8,10 @@
 
 ## Features
 
-- Several kinds of tests
-    - *units*: checks samll target's outputs, mostly without side effects
-    - *behaviors*: checks target's outputs with its side effects
-    - *scenarios*: like behaviors, but more large and needs more user's point of view?
-    - ...and anymore?
-- Structurized tests
+- Several kinds of test contexts
+    - for test subjects
+    - for test structurizing
+    - for points of view of test
 - Hooks in the lifecyles of tests
 - Introspection in the REPL
 - Useful modules
@@ -57,11 +55,11 @@ With *Ethogram*, tests are defined by `test` macro and its DSL. The basic form o
 
 - targets: `:for`, `:about`
 - contexts: `:when`, `:in` (in?)
-- testcases: `:unit`, `:behavior`, `:scenario`
+- testcases: `:unit`, `:action`, `:behavior`
 
-*Testcases* describe a type of the test describing here. `:unit` describes a small tests for an operator or a small unit, mostly without side effects. `:behavior` describes **one behavior** of the test subject with side effects. `:scenario` is like `:behavior` but checks more larger, more closer to users points of view.
+*Testcases* describe a type of the test describing here. `:unit` describes a small tests for **an operator** or **a small unit**, mostly without side effects. `:action` describes some **affection caused by the test subject**. `:behavior` describes the **behaviors about a functionality** expected in a target system.
 
-### Defining a unit
+### Defining an unit
 
 ```lisp
 (defun my-integer-p (n) ...)  ; a test subject
@@ -73,26 +71,24 @@ With *Ethogram*, tests are defined by `test` macro and its DSL. The basic form o
     :input 10 :expect t)
 ```
 
-### Defining a behavior
+### Defining an action
 
 ```lisp
 (defun all-books () ...)
 (defun create-book (title author) ...)  ; a test subject
 
-(test :behavior "A book created"
+(test :action "A book created"
   :subject #'create-book
   :input ("The Hitchhiker's Guide to Galaxy" "Daglas Adams")
   :expect :before(zero (length (all-books)))
   :expect :after (= (length (all-books)) 1))
 ```
 
-### Defining a scenario
-
-(WIP: useful feature aminig to describe scenarios)
+### Defining a behavoir
 
 ```lisp
 (test :about "The book database application"
-  (test :scenario "The user registers them book"
+  (test :behavoir "The user registers them book"
     :step "The user gets an empty book list"         ; make a label behavior-forms1 below. :step is temporal name...
     forms...
 
@@ -102,7 +98,7 @@ With *Ethogram*, tests are defined by `test` macro and its DSL. The basic form o
     :step "The user checks that the book is registered"
     forms...)
 
-  (test :scenario "The user searches a book"
+  (test :bahavoir "The user searches a book"
     ...))
 ```
 
