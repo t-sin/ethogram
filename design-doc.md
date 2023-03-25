@@ -8,12 +8,6 @@
 
 CURRENTLY WRITING
 
-### TODO
-
-- [ ] Basic concepts
-- [ ] Required features
-- [ ] Detailed DSL definitions for each testing contexts
-
 ## WIP: Objective
 
 ### Motivation
