@@ -4,7 +4,7 @@
 
 ## Status
 
-**CURRENTLY WRITING [design-doc.md](design-doc.md)**
+**CURRENTLY WRITING [spec.md](spec.md)**
 
 ## Author
 
