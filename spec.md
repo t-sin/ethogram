@@ -12,6 +12,9 @@
     - for points of view of test
 - Hooks in the lifecyles of tests
 - Introspection in the REPL
+
+## Optiolan features
+
 - Useful modules
     - expectation describing DSL
         - needless? because of [cl-hamcrest](https://github.com/40ants/cl-hamcrest)?
