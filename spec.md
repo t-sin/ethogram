@@ -10,7 +10,10 @@
 - [x] To introduce all *Ethogram*'s features
 - [ ] To introduce details for all features
 
-## What should be PROVIDED by *Ethogram*
+
+## Scope for *Ethogram*
+
+### What should be PROVIDED by *Ethogram*
 
 These must be implemented in *Ethogram*
 
