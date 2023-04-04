@@ -13,7 +13,7 @@
 - Hooks in the lifecyles of tests
 - Introspection in the REPL
 
-## Optiolan features
+## Optional features
 
 - Useful modules
     - expectation describing DSL
