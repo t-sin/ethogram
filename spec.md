@@ -4,28 +4,57 @@
 
 **CURRENTLY WRITING**
 
-## Required features
+### TODO
 
-- Several kinds of test contexts
-    - for test subjects
-    - for test structurizing
-    - for points of view of test
-- Hooks in the lifecyles of tests
-- Introspection in the REPL
+- [x] To define what has done and what is not treated by *Ethogram*
+- [x] To introduce all *Ethogram*'s features
+- [ ] To introduce details for all features
 
-## Optional features
+## What should be PROVIDED by *Ethogram*
 
-- Useful modules
-    - expectation describing DSL
-        - needless? because of [cl-hamcrest](https://github.com/40ants/cl-hamcrest)?
-    - mocking frameworks
-        - needless? because of [cl-mock](https://github.com/Ferada/cl-mock) or [mockingbird](https://github.com/Chream/mockingbird)?
-    - printing difference between expected and actual
-        - I cannot found about this...
-    - test data templating
-        - like [factory_bot](https://github.com/thoughtbot/factory_bot) for Ruby
-- Fast testing
-    - but how? by what's infomation?
+These must be implemented in *Ethogram*
+
+1.  a high-level testing framework to define these:
+    1. test subjects type
+    2. context hierarchy
+    3. point of view for tests defined
+    4. hooks in each steps in running tests
+2.  some supports for the behavoir-driven development
+3.  a DSL to test a simple boolean form or function
+    - NOTE: see *NOT BE PROVIDED 1*
+    - it will need small extention for running test part
+4. some operations for introspecting tests themsselves **in REPL**
+
+### What should NOT BE PROVIDED by *Ethogram*
+
+These may not implemented in *Ethogram* may be provided as another library or using some existing libraries.
+
+1. an expectation describing framework
+    - needless? because of [cl-hamcrest](https://github.com/40ants/cl-hamcrest)?
+2. a mocking framework
+    - needless? because of [cl-mock](https://github.com/Ferada/cl-mock) or [mockingbird](https://git
+3. a data templating framework
+    - needed like [factory_bot](https://github.com/thoughtbot/factory_bot) for Ruby
+    - but not found now
+4. a pretty printing feature for the values between expected and actual
+    - I cannot found about this...
+
+### Future work
+
+1. speed of running tests
+2. loading/unloading test subjects? (needed?)
+
+## Features
+
+- A DSL to define tests: a `test` macro
+    - Several kinds of *test contexts*
+        - for test subjects: a funtion, a macro or a form
+        - for test structurizing: 1) `about`, 2) `when` ...?
+        - for points of view of test for: an unit test, a side-effect or a behavior
+    - Hooks in the lifecyles of tests
+        - before a context, after a context or any other?
+- Introspection API for our REPL
+- Check if the subjects satisfies some expectations by a boolean value returned
 
 ## Basic concepts
 ### Testing contexts
@@ -33,13 +62,16 @@
 #### Test subjects
 #### Structurizing tests
 ### Lifecycle of testing contexts
-### Expectations
-
 ## Describing tests with `test` macro
 ## Describing expectations
 ## Hooks in running tests
 ## Introspection in the REPL
 ## Extending or defining a testing contexts
+
+## References
+
+- [Rspec](https://github.com/rspec/rspec-metagem): BDD-supported testing framework for Ruby
+- [Ginkgo](https://github.com/onsi/ginkgo): Modern testing framework for Go, including BDD features
 
 -----
 
@@ -99,7 +131,7 @@ With *Ethogram*, tests are defined by `test` macro and its DSL. The basic form o
 (test :action "A book created"
   :subject #'create-book
   :input ("The Hitchhiker's Guide to Galaxy" "Daglas Adams")
-  :expect :before(zero (length (all-books)))
+  :expect :before (zero (length (all-books)))
   :expect :after (= (length (all-books)) 1))
 ```
 
@@ -177,16 +209,3 @@ A way to enable lazy evaluation and memoization in most other languages cannot u
     :for 10 :returns 100
     :for 20 :returns 200)))
 ```
-
-## References
-
-- [Rspec](https://github.com/rspec/rspec-metagem): BDD-supported testing framework for Ruby
-- [Ginkgo](https://github.com/onsi/ginkgo): Modern testing framework for Go, including BDD features
-
-## Author
-
-- t-sin (<shinichi.tanaka45@gmail.com>)
-
-## License
-
-*Ethogram* is licensed under [the MIT license](LICENSE).
