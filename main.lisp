@@ -53,6 +53,15 @@
       :do (push testcase failed))
     (nreverse failed)))
 
+(defun report-result (subject failed)
+  (loop
+    :for n :from 0 :below (length failed)
+    :for testcase := (elt failed n)
+    :do (format t "~a expected ~a but an actual ~a~%"
+                subject
+                (testcase-expected testcase)
+                (testcase-actual testcase))))
+
 (defmacro test (context &body dsl)
   (cond ((eq context :function)
          (let ((subject (first dsl))
@@ -65,5 +74,5 @@
                `(let ((,%subject ,subject)
                       (,%testcases (prepare-testcases ',testdefs)))
                   (run-testcases ,%subject ,%testcases)
-                  (collect-result ,%testcases))))))
+                  (report-result ,%subject (collect-result ,%testcases)))))))
         (t (error "a test context ~s is not implemented yet" context))))
