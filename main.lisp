@@ -3,14 +3,23 @@
   (:export))
 (in-package :ethogram)
 
+(defparameter *catalogues* ())
+
+(defstruct test
+  name subject cases)
+
 (defstruct testcase
-  name
   input expected actual succeeded-p)
 
 (defun valid-context-p (subject)
   (when (or (functionp subject) (symbolp subject))
     (values nil (format nil "not a function: ~s" subject)))
   t)
+
+(defun generate-name (subject)
+  (if (symbolp subject)
+      (format nil "function ~A" (symbol-name subject))
+      (format nil "function ~A" subject)))
 
 (defun parse-defs (sexp)
   (let ((defs (loop
@@ -34,10 +43,25 @@
   (multiple-value-bind (validp msg)
       (valid-context-p subject)
     (unless validp (error msg)))
-  (let* ((testdefs (parse-defs defexp))
-         (testcases (prepare-testcases testdefs)))
-    ;; TODO: store tests
-    testcases))
+  (let* ((name (generate-name subject))
+         (testdefs (parse-defs defexp))
+         (testcases (prepare-testcases testdefs))
+         (test (make-test :name name
+                          :subject subject
+                          :cases testcases)))
+    (push test *catalogues*)
+    test))
+
+(defmacro test (context &body exp)
+  (let ((subject (first exp))
+        (defexp (rest exp)))
+    (cond ((eq context :function)
+           (let (($subject (gensym)))
+             `(let ((,$subject ,subject))
+                ;; when will the `prepare` be run at compile-time or runtime?
+                ;; I feel it's run at runtime maybe...
+                (prepare ,$subject ',defexp))))
+          (t (error "a test context ~s is not implemented yet" context)))))
 
 (defun run-testcases (subject testcases)
   (loop
@@ -71,14 +95,22 @@
                 (testcase-expected testcase)
                 (testcase-actual testcase))))
 
-(defun validate (subject testcases)
-  (run-testcases subject testcases)
-  (let ((failed (collect-result testcases)))
-    (report-result subject failed)))
+(defun validate (test &key report)
+  (let ((subject (test-subject test))
+        (testcases (test-cases test)))
+    (run-testcases subject testcases)
+    (let ((failed (collect-result testcases)))
+      (if report
+          (report-result subject failed)
+          failed))))
 
-(defmacro test (context &body exp)
-  (let ((subject (first exp))
-        (defexp (rest exp)))
-    (cond ((eq context :function)
-           (prepare subject defexp))
-    (t (error "a test context ~s is not implemented yet" context)))))
+(defun validate-all (&key report)
+  (let ((failed ()))
+    (loop
+      :for test :in *catalogues*
+      :do (setf failed (nconc failed (validate test))))
+    (if report
+        (loop
+          :for testcase :in failed
+          :do (report-result "<test name here>" failed))
+        failed)))
