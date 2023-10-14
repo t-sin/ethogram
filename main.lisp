@@ -1,6 +1,11 @@
 (defpackage :ethogram
   (:use :cl)
-  (:export))
+  (:export :all-catalogues
+           :clear-catalogues
+
+           :test
+           :validate
+           :validate-all))
 (in-package :ethogram)
 
 (defparameter *catalogues* ())
