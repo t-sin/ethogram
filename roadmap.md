@@ -23,9 +23,14 @@
 6. v0.6.0
     - testing context `:behavior DESC`
         - with keywords `:step DESC`, `:expect FORM`
+7. v0.7.0
+    - testing context hook API
+    - testing context extension API
+    - input difference pretty printing feature (as other library?)
 
 considering...
 
-7. v0.7.0
 8. v0.8.0
 9. v0.9.0
+10. v1.0.0
+    - documentation must be included at this version
