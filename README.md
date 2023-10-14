@@ -4,7 +4,7 @@
 
 ## Status
 
-**CURRENTLY WRITING [spec.md](spec.md)**
+**CURRENTLY UNDER DEVELOPMENT along <roadmap.md>**
 
 ## Author
 
