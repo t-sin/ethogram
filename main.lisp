@@ -9,7 +9,16 @@
   name subject cases)
 
 (defstruct pattern
+  catalogue
   input expected actual succeeded-p)
+
+(defmethod print-object ((pat pattern) stream)
+  (let ((repr (list 'pattern
+                    :input (pattern-input pat)
+                    :expected (pattern-expected pat)
+                    :actual (pattern-actual pat)
+                    :succeeded-p (pattern-succeeded-p pat))))
+    (format stream "#S~s" repr)))
 
 (defun valid-context-p (subject)
   (when (or (functionp subject) (symbolp subject))
@@ -18,14 +27,14 @@
 
 (defun generate-name (subject)
   (if (symbolp subject)
-      (format nil "function ~A" (symbol-name subject))
-      (format nil "function ~A" subject)))
+      (format nil "a function ~a" (symbol-name subject))
+      (format nil "a function ~a" subject)))
 
 (defun parse-defs (sexp)
   (let ((defs (loop
                 :for (k$for input k$returns expected) :on sexp by #'cddddr
                 :unless (and (eq k$for :for) (eq k$returns :returns))
-                :do (error "a mulformed test: ~s" (list k$for input k$returns expected))
+                :do (error "a mulformed pattern: ~s" (list k$for input k$returns expected))
                 :collect (list :input input :expected expected))))
     (nreverse defs)))
 
@@ -44,13 +53,16 @@
       (valid-context-p subject)
     (unless validp (error msg)))
   (let* ((name (generate-name subject))
-         (testdefs (parse-defs defexp))
-         (patterns (prepare-patterns testdefs))
-         (test (make-catalogue :name name
-                               :subject subject
-                               :cases patterns)))
-    (push test *catalogues*)
-    test))
+         (defs (parse-defs defexp))
+         (patterns (prepare-patterns defs))
+         (catalogue (make-catalogue :name name
+                                    :subject subject
+                                    :cases patterns)))
+    (loop
+      :for pat :across patterns
+      :do (setf (pattern-catalogue pat) catalogue))
+    (push catalogue *catalogues*)
+    catalogue))
 
 (defmacro test (context &body exp)
   (let ((subject (first exp))
@@ -59,7 +71,7 @@
            (let (($subject (gensym)))
              `(let ((,$subject ,subject))
                 ;; when will the `prepare` be run at compile-time or runtime?
-                ;; I feel it's run at runtime maybe...
+                ;; i feel it's run at runtime maybe...
                 (prepare ,$subject ',defexp))))
           (t (error "a test context ~s is not implemented yet" context)))))
 
@@ -86,18 +98,16 @@
       :do (push pattern failed))
     (nreverse failed)))
 
-(defun report-result (subject failed)
-  (loop
-    :for n :from 0 :below (length failed)
-    :for pattern := (elt failed n)
-    :do (format t "~a expected ~a but an actual ~a~%"
-                subject
-                (pattern-expected pattern)
-                (pattern-actual pattern))))
+(defun report-result (subject pattern)
+  (format t "running ~a for ~s expects to return ~a but an actual ~a~%"
+          subject
+          (pattern-input pattern)
+          (pattern-expected pattern)
+          (pattern-actual pattern)))
 
-(defun validate (test &key report)
-  (let ((subject (catalogue-subject test))
-        (patterns (catalogue-cases test)))
+(defun validate (catalogue &key report)
+  (let ((subject (catalogue-subject catalogue))
+        (patterns (catalogue-cases catalogue)))
     (run-patterns subject patterns)
     (let ((failed (collect-result patterns)))
       (if report
@@ -107,10 +117,12 @@
 (defun validate-all (&key report)
   (let ((failed ()))
     (loop
-      :for test :in *catalogues*
-      :do (setf failed (nconc failed (validate test))))
+      :for catalogue :in *catalogues*
+      :do (setf failed (nconc failed (validate catalogue)))
+      :finally (setf failed (nreverse failed)))
     (if report
         (loop
           :for pattern :in failed
-          :do (report-result "<test name here>" failed))
+          :for catalogue := (pattern-catalogue pattern)
+          :do (report-result (catalogue-subject catalogue) pattern))
         failed)))
