@@ -5,6 +5,9 @@
 
 (defparameter *catalogues* ())
 
+(defun all-catalogues ()
+  *catalogues*)
+
 (defun clear-catalogues ()
   (setf *catalogues* ()))
 
