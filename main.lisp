@@ -5,6 +5,9 @@
 
 (defparameter *catalogues* ())
 
+(defun clear-catalogues ()
+  (setf *catalogues* ()))
+
 (defstruct catalogue
   name subject cases)
 
