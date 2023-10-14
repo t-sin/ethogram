@@ -4,7 +4,7 @@
 
 ## Status
 
-**CURRENTLY UNDER DEVELOPMENT along [a roadmap](roadmap.md)**
+**CURRENTLY UNDER DEVELOPMENT ALONG [A ROADMAP](roadmap.md)**
 
 ## Author
 
