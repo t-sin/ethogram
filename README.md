@@ -1,6 +1,14 @@
 # Ethogram - A catalogue of behaviors by your code
 
-*Ethogram* is a testing framework for Common Lisp. This aims to define expressive tests. This refres like testing frameworks for the behavior-driven development but not only aims to that.
+*Ethogram* is a testing framework for Common Lisp. *Ethogram* aims to be a tool assists your quick development in terms of TDD/BDD.
+
+*Ethogram* can:
+
+- describe specification as *patterns*
+    - *examples*, in terms of Behavior-driven development
+- check if your code satisfies that specification
+- redefine that specification in your REPL
+    - with `bundle exec guard` like something?
 
 ## Status
 
