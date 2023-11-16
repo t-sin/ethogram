@@ -8,7 +8,8 @@
     - *examples*, in terms of Behavior-driven development
 - check if your code satisfies that specification
 - redefine that specification in your REPL
-    - with `bundle exec guard` like something?
+- automate this describe-write-check-redefine iteration
+    - by `bundle exec guard` like something
 
 ## Status
 
