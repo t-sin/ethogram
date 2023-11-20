@@ -1,10 +1,19 @@
 (defpackage :ethogram
   (:use :cl)
   (:export :defspec
-           :ethogram-checked?
-           :ethogram-check))
+           :checked?
+           :check))
 (in-package :ethogram)
 
-(defun defspec (name))
-(defun ethogram-checked? (ethogram))
-(defun ethogram-check (ethogram))
+(defstruct spec
+  subject
+  (checked? nil))
+
+(defun defspec (subject)
+  (make-spec :subject subject))
+
+(defun checked? (spec)
+  (spec-checked? spec))
+
+(defun check (spec)
+  (setf (spec-checked? spec) t))
