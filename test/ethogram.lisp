@@ -26,7 +26,7 @@
 ;; # TODO
 ;;
 ;; - [x] 検査を実行する
-;; - [ ] 検査の前に:setupを実行する
+;; - [x] 検査の前に:setupを実行する
 ;; - [ ] 検査が失敗しても:teardownを実行する
 ;; - [ ] 複数の検査を実行する
 ;; - [ ] 検査の結果を収集する
@@ -37,4 +37,11 @@
     (check test)
     (assert (not (null (checked? test))))))
 
+(defun test.prepared? ()
+  (let ((test (defspec #'prepared?)))
+    (assert (null (prepared? test)))
+    (check test)
+    (assert (not (null (prepared? test))))))
+
 (test.checked?)
+(test.prepared?)
