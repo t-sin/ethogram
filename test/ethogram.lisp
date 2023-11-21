@@ -37,11 +37,10 @@
     (check test)
     (assert (not (null (checked? test))))))
 
-(defun test.prepared? ()
-  (let ((test (defspec #'prepared?)))
-    (assert (null (prepared? test)))
+(defun test.check ()
+  (let ((test (defspec #'check)))
     (check test)
-    (assert (not (null (prepared? test))))))
+    (assert (equal '(:prepare :check) (checking-logs test)))))
 
 (test.checked?)
-(test.prepared?)
+(test.check)
