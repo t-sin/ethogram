@@ -1,38 +1,43 @@
 (defpackage :ethogram
   (:use :cl)
   (:export :defspec
+           :spec-name
            :checked?
            :check))
 (in-package :ethogram)
 
 (defstruct spec
   subject
+  subject-name
   prepare
   dispose
-  (prepared? nil)
   (checked? nil))
 
-(defun defspec (subject &key
-                        (prepare (lambda ()))
-                        (dispose (lambda ())))
-  (make-spec :subject subject
-             :prepare prepare
-             :dispose dispose))
-
-(defun prepared? (spec)
-  (spec-prepared? spec))
+(defmacro defspec (subject &key
+                           prepare
+                           dispose)
+  `(make-spec :subject ,subject
+              :subject-name ,(symbol-name (second subject))
+              :prepare ,prepare
+              :dispose ,dispose))
 
 (defun checked? (spec)
   (spec-checked? spec))
 
+(defgeneric spec-name (spec))
+(defmethod spec-name ((spec spec))
+  (format nil "~a: a function" (spec-subject-name spec)))
+
 (defgeneric prepare (spec))
 (defmethod prepare ((spec spec))
   (setf (spec-checked? spec) nil)
-  (funcall (spec-prepare spec)))
+  (unless (null (spec-prepare spec))
+    (funcall (spec-prepare spec))))
 
 (defgeneric dispose (spec))
 (defmethod dispose ((spec spec))
-  (funcall (spec-dispose spec)))
+  (unless (null (spec-dispose spec))
+    (funcall (spec-dispose spec))))
 
 (defgeneric check (spec))
 (defmethod check ((spec spec))

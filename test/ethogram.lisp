@@ -37,8 +37,8 @@
 ;; - [x] 検査の前に:prepareを実行する
 ;; - [x] 検査の後に:disposeを実行する
 ;; - [x] 検査がコンディションを投げても:disposeを実行する
-;; - [ ] 検査したい内容を`:behavior STRING or SYMBOL`で記述できる
-;; - [ ] 検査の名前を検査対象と検査したい内容から生成する
+;; - [ ] 検査したい内容を`:describe STRING or SYMBOL`で記述できる
+;; - [ ] 検査の名前を検査対象と検査したい内容 (:describe) から生成する
 ;; - [ ] 関数に対する検査内容を`:returns EXPECTED :for INPUT`で指定する
 ;; - [ ] 検査内容に従って検査する
 ;; - [ ] 検査の結果を出力する
@@ -66,5 +66,12 @@
         (check test)
         (assert (equal '(:prepare :check :dispose) (reverse logs)))))))
 
+(defun test.spec-name-without-description ()
+  (let ((spec (defspec #'oddp))
+        (expected "ODDP: a function"))
+    (assert (typep (spec-name spec) 'string))
+    (assert (string= (spec-name spec) expected))))
+
 (test.checked?)
 (test.check-flow)
+(test.spec-name-without-description)
