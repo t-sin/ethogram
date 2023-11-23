@@ -6,10 +6,10 @@
 ;; # DSL example
 ;;
 ;; ;; 引数は&bodyにしてエディタのインデントを減らす
-;; (defmacro spec (type &body body))
+;; (defmacro fragment (type &body body))
 ;;
 ;; (defspec #'oddp
-;;   :behavior "Check number's oddness"
+;;   :describe "Check number's oddness"
 ;;
 ;;   (fragment :function
 ;;     :returns t :for 1)
@@ -37,8 +37,8 @@
 ;; - [x] 検査の前に:prepareを実行する
 ;; - [x] 検査の後に:disposeを実行する
 ;; - [x] 検査がコンディションを投げても:disposeを実行する
-;; - [ ] 検査したい内容を`:describe STRING or SYMBOL`で記述できる
-;; - [ ] 検査の名前を検査対象と検査したい内容 (:describe) から生成する
+;; - [x] 検査したい内容を`:describe STRING or SYMBOL`で記述できる
+;; - [x] 検査の名前を検査対象と検査したい内容 (:describe) から生成する
 ;; - [ ] 関数に対する検査内容を`:returns EXPECTED :for INPUT`で指定する
 ;; - [ ] 検査内容に従って検査する
 ;; - [ ] 検査の結果を出力する
@@ -72,6 +72,13 @@
     (assert (typep (spec-name spec) 'string))
     (assert (string= (spec-name spec) expected))))
 
+(defun test.spec-name ()
+  (let* ((spec (defspec #'oddp :describe "a function to check a number's oddness"))
+         (expected "ODDP: a function to check a number's oddness"))
+    (assert (typep (spec-name spec) 'string))
+    (assert (string= (spec-name spec) expected))))
+
 (test.checked?)
 (test.check-flow)
 (test.spec-name-without-description)
+(test.spec-name)

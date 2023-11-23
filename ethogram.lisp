@@ -9,15 +9,18 @@
 (defstruct spec
   subject
   subject-name
+  description
   prepare
   dispose
   (checked? nil))
 
 (defmacro defspec (subject &key
+                           describe
                            prepare
                            dispose)
   `(make-spec :subject ,subject
               :subject-name ,(symbol-name (second subject))
+              :description ,describe
               :prepare ,prepare
               :dispose ,dispose))
 
@@ -26,7 +29,11 @@
 
 (defgeneric spec-name (spec))
 (defmethod spec-name ((spec spec))
-  (format nil "~a: a function" (spec-subject-name spec)))
+  (if (null (spec-description spec))
+      (format nil "~a: a function" (spec-subject-name spec))
+      (format nil "~a: ~a"
+              (spec-subject-name spec)
+              (spec-description spec))))
 
 (defgeneric prepare (spec))
 (defmethod prepare ((spec spec))
