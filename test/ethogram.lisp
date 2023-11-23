@@ -26,8 +26,9 @@
 ;; # TODO
 ;;
 ;; - [x] 検査を実行する
-;; - [x] 検査の前に:setupを実行する
-;; - [ ] 検査が失敗しても:teardownを実行する
+;; - [x] 検査の前に:prepareを実行する
+;; - [x] 検査の後に:disposeを実行する
+;; - [ ] 検査が失敗しても:disposeを実行する
 ;; - [ ] 複数の検査を実行する
 ;; - [ ] 検査の結果を収集する
 
@@ -42,11 +43,13 @@
   (let ((logs ()))
     (labels ((push-log (name) (push name logs))
              (prepare () (push-log :prepare))
+             (dispose () (push-log :dispose))
              (subject () (push-log :check)))
       (let ((test (defspec #'subject
-                    :prepare #'prepare)))
+                    :prepare #'prepare
+                    :dispose #'dispose)))
         (check test)
-        (assert (equal '(:prepare :check) (reverse logs)))))))
+        (assert (equal '(:prepare :check :dispose) (reverse logs)))))))
 
 (test.checked?)
 (test.check)
