@@ -1,7 +1,6 @@
 (defpackage :ethogram
   (:use :cl)
   (:export :defspec
-           :prepared?
            :checked?
            :check))
 (in-package :ethogram)
@@ -29,8 +28,7 @@
 (defgeneric prepare (spec))
 (defmethod prepare ((spec spec))
   (setf (spec-checked? spec) nil)
-  (funcall (spec-prepare spec))
-  (setf (spec-prepared? spec) t))
+  (funcall (spec-prepare spec)))
 
 (defgeneric dispose (spec))
 (defmethod dispose ((spec spec))
