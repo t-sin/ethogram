@@ -78,7 +78,17 @@
     (assert (typep (spec-name spec) 'string))
     (assert (string= (spec-name spec) expected))))
 
+(defun test.function-fragment-succeeded ()
+  (let* ((spec (defspec #'oddp '(fragement :function :returns t :for 1))))
+    (assert (equal (check spec) t))))
+
+(defun test.function-fragment-failed ()
+  (let* ((spec (defspec #'oddp '(fragement :function :returns nil :for 1))))
+    (assert (equal (check spec) nil))))
+
 (test.checked?)
 (test.check-flow)
 (test.spec-name-without-description)
 (test.spec-name)
+(test.function-fragment-succeeded)
+(test.function-fragment-failed)
