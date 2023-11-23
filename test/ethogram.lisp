@@ -38,9 +38,12 @@
     (assert (not (null (checked? test))))))
 
 (defun test.check ()
-  (let ((test (defspec #'check)))
-    (check test)
-    (assert (equal '(:prepare :check) (checking-logs test)))))
+  (let ((logs ()))
+    (flet ((push-log (name) (push name logs)))
+      (let ((test (defspec #'check
+                    :prepare (lambda () (push-log :prepare)))))
+        (check test)
+        (assert (equal '(:prepare) logs))))))
 
 (test.checked?)
 (test.check)

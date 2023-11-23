@@ -3,21 +3,18 @@
   (:export :defspec
            :prepared?
            :checked?
-           :checking-logs
            :check))
 (in-package :ethogram)
 
 (defstruct spec
   subject
+  prepare-fn
   (prepared? nil)
-  (checked? nil)
-  (checking-logs (list)))
+  (checked? nil))
 
-(defun defspec (subject)
-  (make-spec :subject subject))
-
-(defun checking-logs (spec)
-  (reverse (spec-checking-logs spec)))
+(defun defspec (subject &key (prepare (lambda ())))
+  (make-spec :subject subject
+             :prepare-fn prepare))
 
 (defun prepared? (spec)
   (spec-prepared? spec))
@@ -27,12 +24,11 @@
 
 (defgeneric prepare (spec))
 (defmethod prepare ((spec spec))
-  (setf (spec-checked? spec) nil
-        (spec-prepared? spec) t)
-  (push :prepare (spec-checking-logs spec)))
+  (setf (spec-checked? spec) nil)
+  (funcall (spec-prepare-fn spec))
+  (setf (spec-prepared? spec) t))
 
 (defgeneric check (spec))
 (defmethod check ((spec spec))
   (prepare spec)
-  (setf (spec-checked? spec) t)
-  (push :check (spec-checking-logs spec)))
+  (setf (spec-checked? spec) t))
