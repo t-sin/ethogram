@@ -32,18 +32,21 @@
 ;; - [ ] 検査の結果を収集する
 
 (defun test.checked? ()
-  (let ((test (defspec #'checked?)))
-    (assert (null (checked? test)))
-    (check test)
-    (assert (not (null (checked? test))))))
+  (flet ((subject ()))
+    (let ((test (defspec #'subject)))
+      (assert (null (checked? test)))
+      (check test)
+      (assert (not (null (checked? test)))))))
 
 (defun test.check ()
   (let ((logs ()))
-    (flet ((push-log (name) (push name logs)))
-      (let ((test (defspec #'check
-                    :prepare (lambda () (push-log :prepare)))))
+    (labels ((push-log (name) (push name logs))
+             (prepare () (push-log :prepare))
+             (subject () (push-log :check)))
+      (let ((test (defspec #'subject
+                    :prepare #'prepare)))
         (check test)
-        (assert (equal '(:prepare) logs))))))
+        (assert (equal '(:prepare :check) (reverse logs)))))))
 
 (test.checked?)
 (test.check)

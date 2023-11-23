@@ -31,4 +31,5 @@
 (defgeneric check (spec))
 (defmethod check ((spec spec))
   (prepare spec)
+  (funcall (spec-subject spec))
   (setf (spec-checked? spec) t))
