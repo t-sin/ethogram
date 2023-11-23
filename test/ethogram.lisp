@@ -28,7 +28,7 @@
 ;; - [x] 検査を実行する
 ;; - [x] 検査の前に:prepareを実行する
 ;; - [x] 検査の後に:disposeを実行する
-;; - [ ] 検査が失敗しても:disposeを実行する
+;; - [x] 検査がコンディションを投げても:disposeを実行する
 ;; - [ ] 複数の検査を実行する
 ;; - [ ] 検査の結果を収集する
 
@@ -39,12 +39,14 @@
       (check test)
       (assert (not (null (checked? test)))))))
 
-(defun test.check ()
+(defun test.check-flow ()
   (let ((logs ()))
     (labels ((push-log (name) (push name logs))
              (prepare () (push-log :prepare))
              (dispose () (push-log :dispose))
-             (subject () (push-log :check)))
+             (subject ()
+               (push-log :check)
+               (signal "signal a condition")))
       (let ((test (defspec #'subject
                     :prepare #'prepare
                     :dispose #'dispose)))
@@ -52,4 +54,4 @@
         (assert (equal '(:prepare :check :dispose) (reverse logs)))))))
 
 (test.checked?)
-(test.check)
+(test.check-flow)
