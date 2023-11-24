@@ -6,30 +6,32 @@
 ;; # DSL example
 ;;
 ;; ;; 引数は&bodyにしてエディタのインデントを減らす
-;; (defmacro fragment (type &body body))
+;; (defmacro examples (type &body body))
 ;;
-;; (defspec #'oddp
-;;   :describe "Check number's oddness"
+;; (defspec "a function to check number's oddness"
+;;   :subject #'oddp
 ;;
-;;   (fragment :function
+;;   (examples :function
 ;;     :returns t :for 1)
 ;;
-;;   (fragment :examples
+;;   (examples :function
 ;;     :about "first argument is an odd number"
-;;     (fragment :function
-;;       "returns false"
-;;       :returns nil :for 0
-;;       :returns nil :for 2
-;;       :returns nil :for 10))
+;;     :returns nil :for 0
+;;     :returns nil :for 2
+;;     :returns nil :for 10)
 ;;
-;;   (fragment :examples
-;;     :about "first argument is not an  odd number"
-;;     (fragment :function
-;;       "returns true"
+;;   (examples :group
+;;     :about "first argument is not an odd number"
+;;     (examples :function
+;;       :about "non-zero numbers"
 ;;       :returns t
 ;;       :for 1
 ;;       :for 3
-;;       :for 1001)))
+;;       :for 1001)
+;;     (examples :function
+;;       :about "a zero"
+;;       :returns t
+;;       :for 0)))
 
 ;; # TODO
 ;;
