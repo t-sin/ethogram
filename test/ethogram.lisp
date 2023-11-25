@@ -1,7 +1,7 @@
-(defpackage :ethogram.test
+(defpackage :ethogram.spec
   (:use :cl
         :ethogram))
-(in-package :ethogram.test)
+(in-package :ethogram.spec)
 
 ;; # DSL example
 ;;
@@ -81,14 +81,14 @@
 ;; ```
 ;;
 
-(defun test.checked? ()
+(defun spec.checked? ()
   (flet ((subject ()))
     (let ((spec (defspec "check if did spec preparation")))
       (assert (null (checked? spec)))
       (check spec)
       (assert (not (null (checked? spec)))))))
 
-(defun test.check-flow ()
+(defun spec.check-flow ()
   (let ((logs ()))
     (labels ((push-log (name) (push name logs))
              (prepare () (push-log :prepare))
@@ -103,10 +103,10 @@
         (check spec)
         (assert (equal '(:prepare :check :dispose) (reverse logs)))))))
 
-(defun test.spec-desc ()
+(defun spec.spec-desc ()
   (let ((spec (defspec "spec description")))
     (assert (string= (spec-desc spec) "spec description"))))
 
-(test.checked?)
-(test.check-flow)
-(test.spec-desc)
+(spec.checked?)
+(spec.check-flow)
+(spec.spec-desc)
