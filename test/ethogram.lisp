@@ -40,7 +40,7 @@
 ;; - [x] 検査の後に:disposeを実行する
 ;; - [x] 検査がコンディションを投げても:disposeを実行する
 ;; - [x] 検査のタイトルをspec-descで取得できる
-;; - [ ] `(examples :function ...)`で定義した内容で検査を実行できる
+;; - [x] `(examples :function ...)`で定義した内容で検査を実行できる
 ;; - [ ] 検査の結果をstdioに即時出力する
 ;; - [ ] defspecによって、それが書かれた環境で評価されるようなチェックコードができる (*1)
 ;;     - あきらかにデカいので分解する
@@ -119,7 +119,20 @@
       (assert (= (elt input 1) 9)))
     (let ((output (function-examples-output example)))
       (assert (typep output 'number))
-      (assert (= output 42)))))
+      (assert (= output 42))))
+  (let ((example (examples :function
+                   :returns (1 2 3) :for (1 2 3))))
+    (assert (typep example 'function-examples))
+    (let ((input (function-examples-input example)))
+      (assert (typep input 'list))
+      (assert (= (elt input 0) 1))
+      (assert (= (elt input 1) 2))
+      (assert (= (elt input 2) 3)))
+    (let ((output (function-examples-output example)))
+      (assert (typep output 'list))
+      (assert (= (elt output 0) 1))
+      (assert (= (elt output 1) 2))
+      (assert (= (elt output 2) 3)))))
 
 (spec.checked?)
 (spec.check-flow)

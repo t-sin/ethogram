@@ -17,10 +17,16 @@
 (defstruct function-examples
   input output)
 
+(defun parse-function-examples (body)
+  (values (getf body :for)
+          (getf body :returns)))
+
 (defmacro examples (type &body body)
   (assert (eq type :function))
-  `(make-function-examples :input '(6 9)
-                           :output 42))
+  (multiple-value-bind (input output)
+      (parse-function-examples body)
+    `(make-function-examples :input ',input
+                             :output ',output)))
 
 (defstruct spec
   desc
