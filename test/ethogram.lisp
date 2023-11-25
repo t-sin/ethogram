@@ -33,7 +33,7 @@
 ;;       :returns t
 ;;       :for 0)))
 
-;; # TODO
+;; # TODO (上からやる)
 ;;
 ;; - [x] 検査を実行する
 ;; - [x] 検査の前に:prepareを実行する
@@ -42,8 +42,42 @@
 ;; - [x] 検査のタイトルをspec-descで取得できる
 ;; - [ ] `(examples :function ...)`で定義した内容で検査を実行できる
 ;; - [ ] 検査の結果をstdioに即時出力する
+;; - [ ] defspecによって、それが書かれた環境で評価されるようなチェックコードができる (*1)
+;;     - あきらかにデカいので分解する
+;; - [ ] :prepareを式で渡せる (*1)
+;; - [ ] :disposeを式で渡せる (*1)
 ;; - [ ] 複数の検査を実行する
 ;; - [ ] 検査の結果を収集する
+;;
+;; -----
+;;
+;; *1 後にまわす系の既知の課題。
+;;    defspec内に現れる各式はdefspecが定義された環境で評価されるべき。
+;;    でないとdefspecの外のdefparameterやdefunを触れなくなる。
+;;    defspecの内部なら宣言を以下の形式でのみ許可して限定できるとする:
+;;      `:let NAME := INITFORM` (初期化はオプショナル)
+;;    でも書いた環境で評価されることを保証せねばいろいろ直観的でなくなっちゃう。
+;;    例: defspecではspecに式を保持するだけでcheck時に式を評価すると、
+;;        環境が違うので意図しない値が評価結果で出てきて泣く。
+;;    どうしよ...
+;;
+;; ```lisp
+;; (defclass counter ()
+;;   (count :initform 0
+;;          :reader counter-n))
+;;
+;; (defgeneric countup (counter))
+;; (defmethod countup ((c counter))
+;;   (incf (counter-n c)))
+;;
+;; (defspec "prepareで保持してテストで使ってdisposeで束縛ごと後始末したい"
+;;   :subject #'countup
+;;   :let counter
+;;   :prepare (setf counter (make-instance 'counter))
+;;   :do (subject counter)  ; doじゃないこうメインの処理感がほしい...
+;;   :expect 1)
+;; ```
+;;
 
 (defun test.checked? ()
   (flet ((subject ()))
