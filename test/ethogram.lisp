@@ -107,6 +107,21 @@
   (let ((spec (defspec "spec description")))
     (assert (string= (spec-desc spec) "spec description"))))
 
+(defun spec.define-example ()
+  "define a function example"
+  (let ((example (examples :function
+                   :returns 42 :for (6 9))))
+    (assert (typep example 'function-examples))
+    (let ((input (function-examples-input example)))
+      (assert (typep input 'list))
+      (assert (= (length input) 2))
+      (assert (= (elt input 0) 6))
+      (assert (= (elt input 1) 9)))
+    (let ((output (function-examples-output example)))
+      (assert (typep output 'number))
+      (assert (= output 42)))))
+
 (spec.checked?)
 (spec.check-flow)
 (spec.spec-desc)
+(spec.define-example)
