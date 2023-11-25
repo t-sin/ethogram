@@ -4,8 +4,8 @@
 
 *Ethogram* can:
 
-- describe specification as *patterns*
-    - *examples*, in terms of Behavior-driven development
+- describe specification as a set of usases called *examples*
+    - *example* is a term of Behavior-driven development
 - check if your code satisfies that specification
 - redefine that specification in your REPL
 - automate this describe-write-check-redefine iteration
