@@ -1,10 +1,26 @@
 (defpackage :ethogram
   (:use :cl)
-  (:export :defspec
-           :spec-desc
-           :checked?
-           :check))
+  (:export
+   ;; spec
+   :defspec
+   :spec-desc
+   ;; example
+   :examples
+   :function-examples
+   :function-examples-input
+   :function-examples-output
+   ;; methods
+   :checked?
+   :check))
 (in-package :ethogram)
+
+(defstruct function-examples
+  input output)
+
+(defmacro examples (type &body body)
+  (assert (eq type :function))
+  `(make-function-examples :input '(6 9)
+                           :output 42))
 
 (defstruct spec
   desc
