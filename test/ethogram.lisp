@@ -39,7 +39,7 @@
 ;; - [x] 検査の前に:prepareを実行する
 ;; - [x] 検査の後に:disposeを実行する
 ;; - [x] 検査がコンディションを投げても:disposeを実行する
-;; - [ ] 検査のタイトルをspec-descで取得できる
+;; - [x] 検査のタイトルをspec-descで取得できる
 ;; - [ ] `(examples :function ...)`で定義した内容で検査を実行できる
 ;; - [ ] 検査の結果をstdioに即時出力する
 ;; - [ ] 複数の検査を実行する
@@ -47,7 +47,7 @@
 
 (defun test.checked? ()
   (flet ((subject ()))
-    (let ((spec (defspec #'subject)))
+    (let ((spec (defspec "check if did spec preparation")))
       (assert (null (checked? spec)))
       (check spec)
       (assert (not (null (checked? spec)))))))
@@ -60,11 +60,17 @@
              (subject ()
                (push-log :check)
                (signal "signal a condition")))
-      (let ((spec (defspec #'subject
+      (let ((spec (defspec "check flow is: preparation, checking and disposing"
+                    :subject #'subject
                     :prepare #'prepare
                     :dispose #'dispose)))
         (check spec)
         (assert (equal '(:prepare :check :dispose) (reverse logs)))))))
 
+(defun test.spec-desc ()
+  (let ((spec (defspec "spec description")))
+    (assert (string= (spec-desc spec) "spec description"))))
+
 (test.checked?)
 (test.check-flow)
+(test.spec-desc)

@@ -1,20 +1,24 @@
 (defpackage :ethogram
   (:use :cl)
   (:export :defspec
+           :spec-desc
            :checked?
            :check))
 (in-package :ethogram)
 
 (defstruct spec
+  desc
   subject
   prepare
   dispose
   (checked? nil))
 
-(defmacro defspec (subject &key
-                           prepare
-                           dispose)
-  `(make-spec :subject ,subject
+(defmacro defspec (desc &key
+                        subject
+                        prepare
+                        dispose)
+  `(make-spec :desc ,desc
+              :subject ,subject
               :prepare ,prepare
               :dispose ,dispose))
 
