@@ -47,10 +47,10 @@
 
 (defun test.checked? ()
   (flet ((subject ()))
-    (let ((test (defspec #'subject)))
-      (assert (null (checked? test)))
-      (check test)
-      (assert (not (null (checked? test)))))))
+    (let ((spec (defspec #'subject)))
+      (assert (null (checked? spec)))
+      (check spec)
+      (assert (not (null (checked? spec)))))))
 
 (defun test.check-flow ()
   (let ((logs ()))
@@ -60,10 +60,10 @@
              (subject ()
                (push-log :check)
                (signal "signal a condition")))
-      (let ((test (defspec #'subject
+      (let ((spec (defspec #'subject
                     :prepare #'prepare
                     :dispose #'dispose)))
-        (check test)
+        (check spec)
         (assert (equal '(:prepare :check :dispose) (reverse logs)))))))
 
 (test.checked?)
