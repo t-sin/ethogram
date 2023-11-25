@@ -72,10 +72,12 @@
 ;;
 ;; (defspec "prepareで保持してテストで使ってdisposeで束縛ごと後始末したい"
 ;;   :subject #'countup
+;;
 ;;   :let counter
 ;;   :prepare (setf counter (make-instance 'counter))
-;;   :do (subject counter)  ; doじゃないこうメインの処理感がほしい...
-;;   :expect 1)
+;;   (examples :sideeffect     ; ちょっと大仰...
+;;     :run (subject counter)  ; doじゃないこうメインの処理感がほしい...
+;;     :expect 1))
 ;; ```
 ;;
 
