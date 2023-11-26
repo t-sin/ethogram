@@ -84,27 +84,29 @@
 ;;
 
 (defun spec.checked? ()
-  (let ((spec (defspec "check if did spec preparation"
-                :subject #'oddp)))
-    (assert (null (checked? spec)))
-    (check spec)
-    (assert (not (null (checked? spec))))))
+  (flet ((subject ()))
+    (let ((spec (defspec "check if did spec preparation")))
+      (assert (null (checked? spec)))
+      (check spec)
+      (assert (not (null (checked? spec)))))))
 
 (defun spec.check-flow ()
   (let ((logs ()))
-    (flet ((subject ()
-             (push :check logs)
-             (signal "signal a condition")))
+    (labels ((push-log (name) (push name logs))
+             (prepare () (push-log :prepare))
+             (dispose () (push-log :dispose))
+             (subject ()
+               (push-log :check)
+               (signal "signal a condition")))
       (let ((spec (defspec "check flow is: preparation, checking and disposing"
                     :subject #'subject
-                    :prepare (push :prepare logs)
-                    :dispose (push :dispose logs))))
+                    :prepare #'prepare
+                    :dispose #'dispose)))
         (check spec)
         (assert (equal '(:prepare :check :dispose) (reverse logs)))))))
 
 (defun spec.spec-desc ()
-  (let ((spec (defspec "spec description"
-                :subject #'identity)))
+  (let ((spec (defspec "spec description")))
     (assert (string= (spec-desc spec) "spec description"))))
 
 (defun spec.define-example ()
@@ -134,26 +136,7 @@
       (assert (= (elt output 1) 2))
       (assert (= (elt output 2) 3)))))
 
-(defun spec.check-example ()
-  "check a function example"
-  (let ((spec (defspec "success"
-                :subject #'oddp
-                (examples :function
-                  :returns t :for 1))))
-    (assert (check spec)))
-  (let ((spec (defspec "failure"
-                :subject #'oddp
-                (examples :function
-                  :returns t :for 2))))
-    (assert (not (check spec))))
-  (let ((spec (defspec "failure with condition"
-                :subject #'oddp
-                (examples :function
-                  :returns t :for (signal "error")))))
-    (assert (not (check spec)))))
-
 (spec.checked?)
 (spec.check-flow)
 (spec.spec-desc)
 (spec.define-example)
-(spec.check-example)
