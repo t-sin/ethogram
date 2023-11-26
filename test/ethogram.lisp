@@ -145,8 +145,21 @@
           (parse-spec body)
           (assert nil))))))
 
+(defun spec.parse-spec-body.parse-subject ()
+  (let ((body `(:subject ,#'oddp)))
+    (assert (eq (parse-spec body) #'oddp))))
+
+(defun spec.parse-spec-body.parse-prepare ()
+  (let ((body `(:subject ,#'oddp
+                :prepare '(identity 42))))
+    (assert (equal (multiple-value-list (parse-spec body))
+                   `(,#'oddp
+                     '(identity 42))))))
+
 (spec.checked?)
 (spec.check-flow)
 (spec.spec-desc)
 (spec.define-example)
 (spec.parse-spec-body.empty-body-signaled-error)
+(spec.parse-spec-body.parse-subject)
+(spec.parse-spec-body.parse-prepare)

@@ -34,7 +34,10 @@
   ((reason :initform nil)))
 
 (defun parse-spec (body)
-  (signal (make-condition 'malformed-spec-error)))
+  (when (null body)
+    (signal (make-condition 'malformed-spec-error)))
+  (values (getf body :subject)
+          (getf body :prepare)))
 
 (defstruct spec
   desc
