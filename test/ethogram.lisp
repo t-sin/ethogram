@@ -147,25 +147,27 @@
           (assert nil))))))
 
 (defun spec.parse-spec-body.parse-subject ()
-  (let ((body `(:subject ,#'oddp)))
-    (assert (eq (parse-spec body) #'oddp))))
+  (let ((body '(:subject #'oddp)))
+    (assert (eq (parse-spec body) '#'oddp))))
 
 (defun spec.parse-spec-body.parse-prepare ()
-  (let ((body `(:subject ,#'oddp
-                :prepare '(identity 42))))
+  (let ((body '(:subject #'oddp
+                :prepare (identity 42))))
     (assert (equal (multiple-value-list (parse-spec body))
-                   `(,#'oddp
-                     '(identity 42)
+                   '(#'oddp
+                     (identity 42)
+                     nil
                      nil)))))
 
 (defun spec.parse-spec-body.parse-dispose ()
-  (let ((body `(:subject ,#'oddp
-                :prepare '(identity 42)
-                :dispose '(identity 45))))
+  (let ((body '(:subject #'oddp
+                :prepare (identity 42)
+                :dispose (identity 45))))
     (assert (equal (multiple-value-list (parse-spec body))
-                   `(,#'oddp
-                     '(identity 42)
-                     '(identity 45))))))
+                   '(#'oddp
+                     (identity 42)
+                     (identity 45)
+                     nil)))))
 
 (defun spec.parse-spec-body.subject-is-required ()
   (let ((body `(:prepare '(identity 42))))
@@ -177,14 +179,14 @@
           (parse-spec body))))))
 
 (defun spec.parse-spec-body.parse-examples ()
-  (let ((body `(:subject ,#'oddp
-                :prepare '(identity 42)
-                '(examples :function :returns t :for 1))))
-    (assert (equal (multiple-value-list (parse-spec body))
-                   `(,#'oddp
-                     '(identity 42)
-                     nil
-                     '(examples :function :returns t :for 1))))))
+  (let ((body '(:subject #'oddp
+                :prepare (identity 42)
+                (examples :function :returns t :for 1))))
+    (assert (tree-equal (multiple-value-list (parse-spec body))
+                        '(#'oddp
+                          (identity 42)
+                          nil
+                          (examples :function :returns t :for 1))))))
 
 (spec.checked?)
 (spec.check-flow)
