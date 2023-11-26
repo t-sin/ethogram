@@ -181,6 +181,16 @@
                           nil
                           (examples :function :returns t :for 1))))))
 
+(defun spec.define-spec ()
+  (let ((spec (defspec "spec"
+                :subject #'oddp
+                :prepare (print :ln)
+                (examples :function
+                  :returns t :for 1))))
+    (assert (string= (spec-desc spec) "spec"))
+    (assert (eq (spec-subject spec) #'oddp))
+    (assert (not (null (spec-check spec))))))
+
 (spec.check-flow)
 (spec.spec-desc)
 (spec.define-example)
@@ -190,3 +200,4 @@
 (spec.parse-spec-body.parse-prepare)
 (spec.parse-spec-body.parse-dispose)
 (spec.parse-spec-body.parse-examples)
+(spec.define-spec)
