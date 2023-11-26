@@ -3,6 +3,7 @@
   (:export
    ;; spec
    :malformed-spec-error
+   :reason
    :parse-spec
    :defspec
    :spec-desc
@@ -31,13 +32,19 @@
                              :output ',output)))
 
 (define-condition malformed-spec-error (error)
-  ((reason :initform nil)))
+  ((reason :initform nil
+           :initarg :reason)))
 
 (defun parse-spec (body)
   (when (null body)
-    (signal (make-condition 'malformed-spec-error)))
+    (signal (make-condition 'malformed-spec-error
+                            :reason "empty")))
+  (unless (member :subject body)
+    (signal (make-condition 'malformed-spec-error
+                            :reason ":SUBJECT is required")))
   (values (getf body :subject)
-          (getf body :prepare)))
+          (getf body :prepare)
+          (getf body :dispose)))
 
 (defstruct spec
   desc

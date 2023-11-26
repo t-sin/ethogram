@@ -139,9 +139,10 @@
 (defun spec.parse-spec-body.empty-body-signaled-error ()
   (let ((body '()))
     (block check
-      (flet ((succeeded (c)
+      (flet ((check-reason (c)
+               (assert (string= (slot-value c 'reason) "empty"))
                (return-from check)))
-        (handler-bind ((malformed-spec-error #'succeeded))
+        (handler-bind ((malformed-spec-error #'check-reason))
           (parse-spec body)
           (assert nil))))))
 
@@ -154,7 +155,26 @@
                 :prepare '(identity 42))))
     (assert (equal (multiple-value-list (parse-spec body))
                    `(,#'oddp
-                     '(identity 42))))))
+                     '(identity 42)
+                     nil)))))
+
+(defun spec.parse-spec-body.parse-dispose ()
+  (let ((body `(:subject ,#'oddp
+                :prepare '(identity 42)
+                :dispose '(identity 45))))
+    (assert (equal (multiple-value-list (parse-spec body))
+                   `(,#'oddp
+                     '(identity 42)
+                     '(identity 45))))))
+
+(defun spec.parse-spec-body.subject-is-required ()
+  (let ((body `(:prepare '(identity 42))))
+    (block check
+      (flet ((check-reason (c)
+               (assert (string= (slot-value c 'reason) ":SUBJECT is required"))
+               (return-from check)))
+        (handler-bind ((malformed-spec-error #'check-reason))
+          (parse-spec body))))))
 
 (spec.checked?)
 (spec.check-flow)
@@ -162,4 +182,6 @@
 (spec.define-example)
 (spec.parse-spec-body.empty-body-signaled-error)
 (spec.parse-spec-body.parse-subject)
+(spec.parse-spec-body.subject-is-required)
 (spec.parse-spec-body.parse-prepare)
+(spec.parse-spec-body.parse-dispose)
