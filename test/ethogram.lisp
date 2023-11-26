@@ -136,7 +136,17 @@
       (assert (= (elt output 1) 2))
       (assert (= (elt output 2) 3)))))
 
+(defun spec.parse-spec-body.empty-body-signaled-error ()
+  (let ((body '()))
+    (block check
+      (flet ((succeeded (c)
+               (return-from check)))
+        (handler-bind ((malformed-spec-error #'succeeded))
+          (parse-spec body)
+          (assert nil))))))
+
 (spec.checked?)
 (spec.check-flow)
 (spec.spec-desc)
 (spec.define-example)
+(spec.parse-spec-body.empty-body-signaled-error)

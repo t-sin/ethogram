@@ -2,6 +2,8 @@
   (:use :cl)
   (:export
    ;; spec
+   :malformed-spec-error
+   :parse-spec
    :defspec
    :spec-desc
    ;; example
@@ -27,6 +29,12 @@
       (parse-function-examples body)
     `(make-function-examples :input ',input
                              :output ',output)))
+
+(define-condition malformed-spec-error (error)
+  ((reason :initform nil)))
+
+(defun parse-spec (body)
+  (signal (make-condition 'malformed-spec-error)))
 
 (defstruct spec
   desc
