@@ -176,6 +176,16 @@
         (handler-bind ((malformed-spec-error #'check-reason))
           (parse-spec body))))))
 
+(defun spec.parse-spec-body.parse-examples ()
+  (let ((body `(:subject ,#'oddp
+                :prepare '(identity 42)
+                '(examples :function :returns t :for 1))))
+    (assert (equal (multiple-value-list (parse-spec body))
+                   `(,#'oddp
+                     '(identity 42)
+                     nil
+                     '(examples :function :returns t :for 1))))))
+
 (spec.checked?)
 (spec.check-flow)
 (spec.spec-desc)
@@ -185,3 +195,4 @@
 (spec.parse-spec-body.subject-is-required)
 (spec.parse-spec-body.parse-prepare)
 (spec.parse-spec-body.parse-dispose)
+(spec.parse-spec-body.parse-examples)
