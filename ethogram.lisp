@@ -13,7 +13,6 @@
    :function-examples-input
    :function-examples-output
    ;; methods
-   :checked?
    :check))
 (in-package :ethogram)
 
@@ -61,8 +60,7 @@
   desc
   subject
   prepare
-  dispose
-  (checked? nil))
+  dispose)
 
 (defmacro defspec (desc &key
                         subject
@@ -73,12 +71,9 @@
               :prepare ,prepare
               :dispose ,dispose))
 
-(defun checked? (spec)
-  (spec-checked? spec))
 
 (defgeneric prepare (spec))
 (defmethod prepare ((spec spec))
-  (setf (spec-checked? spec) nil)
   (unless (null (spec-prepare spec))
     (funcall (spec-prepare spec))))
 
@@ -96,5 +91,4 @@
                 (return-from check)))
          (handler-bind ((condition #'do-nothing))
            (funcall (spec-subject spec))))
-    (dispose spec)
-    (setf (spec-checked? spec) t)))
+    (dispose spec)))

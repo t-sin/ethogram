@@ -83,13 +83,6 @@
 ;; ```
 ;;
 
-(defun spec.checked? ()
-  (flet ((subject ()))
-    (let ((spec (defspec "check if did spec preparation")))
-      (assert (null (checked? spec)))
-      (check spec)
-      (assert (not (null (checked? spec)))))))
-
 (defun spec.check-flow ()
   (let ((logs ()))
     (labels ((push-log (name) (push name logs))
@@ -188,7 +181,6 @@
                           nil
                           (examples :function :returns t :for 1))))))
 
-(spec.checked?)
 (spec.check-flow)
 (spec.spec-desc)
 (spec.define-example)
