@@ -94,12 +94,17 @@
       (let ((spec (defspec "check flow is: preparation, checking and disposing"
                     :subject #'subject
                     :prepare (prepare)
-                    :dispose (dispose))))
+                    :dispose (dispose)
+                    (examples :function
+                      :returns nil :for nil))))
         (check spec)
         (assert (equal '(:prepare :check :dispose) (reverse logs)))))))
 
 (defun spec.spec-desc ()
-  (let ((spec (defspec "spec description" :subject #'oddp)))
+  (let ((spec (defspec "spec description"
+                :subject #'oddp
+                (examples :function
+                  :returns t :for 1))))
     (assert (string= (spec-desc spec) "spec description"))))
 
 (defun spec.define-example ()
@@ -113,8 +118,8 @@
       (assert (= (elt input 0) 6))
       (assert (= (elt input 1) 9)))
     (let ((output (function-examples-output example)))
-      (assert (typep output 'number))
-      (assert (= output 42))))
+      (assert (typep output 'list))
+      (assert (= (elt output 0) 42))))
   (let ((example (examples :function
                    :returns (1 2 3) :for (1 2 3))))
     (assert (typep example 'function-examples))
@@ -191,6 +196,20 @@
     (assert (eq (spec-subject spec) #'oddp))
     (assert (not (null (spec-check spec))))))
 
+(defun spec.check-spec-succeeds ()
+  (let ((spec (defspec "spec"
+                :subject #'oddp
+                (examples :function
+                  :returns t :for 1))))
+    (assert (check spec))))
+
+(defun spec.check-spec-fails ()
+  (let ((spec (defspec "spec"
+                :subject #'oddp
+                (examples :function
+                  :returns t :for 2))))
+    (assert (not (check spec)))))
+
 (spec.check-flow)
 (spec.spec-desc)
 (spec.define-example)
@@ -201,3 +220,5 @@
 (spec.parse-spec-body.parse-dispose)
 (spec.parse-spec-body.parse-examples)
 (spec.define-spec)
+(spec.check-spec-succeeds)
+(spec.check-spec-fails)

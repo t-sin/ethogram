@@ -29,8 +29,16 @@
   (assert (eq type :function))
   (multiple-value-bind (input output)
       (parse-function-examples body)
-    `(make-function-examples :input ',input
-                             :output ',output)))
+    (alexandria:with-gensyms ($input $output)
+      `(let ((,$input ',input)
+             (,$output ',output))
+         (make-function-examples
+          :input (if (or (null ,$input) (listp ,$input))
+                     ,$input
+                     (list ,$input))
+          :output (if (or (null ,$output) (listp ,$output))
+                      ,$output
+                      (list ,$output)))))))
 
 (define-condition malformed-spec-error (error)
   ((reason :initform nil
@@ -61,22 +69,27 @@
 (defstruct spec
   desc
   subject
-  check
   prepare
-  dispose)
+  dispose
+  examples
+  check)
 
 (defmacro defspec (desc &body body)
   (multiple-value-bind (subject prepare dispose examples)
       (parse-spec body)
-    (let (($subject (gensym)))
-      `(let ((,$subject ,subject))
+    (alexandria:with-gensyms ($subject $examples)
+      `(let ((,$subject ,subject)
+             (,$examples ,examples))
          (make-spec :desc ,desc
                 :subject ,$subject
-                :check (lambda () (funcall ,$subject))
-                ,@(unless (null prepare)
+                :check (lambda ()
+                         (apply ,$subject
+                                (function-examples-input ,$examples)))
+                ,@(when prepare
                     `(:prepare (lambda () ,prepare)))
-                ,@(unless (null dispose)
-                    `(:dispose (lambda () ,dispose))))))))
+                ,@(when dispose
+                    `(:dispose (lambda () ,dispose)))
+                :examples ,$examples)))))
 
 (defgeneric prepare (spec))
 (defmethod prepare ((spec spec))
@@ -91,10 +104,15 @@
 (defgeneric check (spec))
 (defmethod check ((spec spec))
   (prepare spec)
-  (unwind-protect
-       (flet ((do-nothing (c)
-                (declare (ignorable c))
-                (return-from check)))
-         (handler-bind ((condition #'do-nothing))
-           (funcall (spec-check spec))))
-    (dispose spec)))
+  (let (actual expected result)
+    (unwind-protect
+         (flet ((do-nothing (c)
+                  (declare (ignorable c))
+                  (format t "~a" c)
+                  (return-from check)))
+           (handler-bind ((condition #'do-nothing))
+             (setf expected (function-examples-output (spec-examples spec)))
+             (setf actual (multiple-value-list (funcall (spec-check spec))))
+             (setf result (equal actual expected))))
+      (dispose spec)
+      result)))
