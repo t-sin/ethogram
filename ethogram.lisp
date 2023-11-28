@@ -7,6 +7,8 @@
    :parse-spec
    :defspec
    :spec-desc
+   :spec-subject
+   :spec-check
    ;; example
    :examples
    :function-examples
@@ -59,18 +61,22 @@
 (defstruct spec
   desc
   subject
+  check
   prepare
   dispose)
 
-(defmacro defspec (desc &key
-                        subject
-                        prepare
-                        dispose)
-  `(make-spec :desc ,desc
-              :subject ,subject
-              :prepare ,prepare
-              :dispose ,dispose))
-
+(defmacro defspec (desc &body body)
+  (multiple-value-bind (subject prepare dispose examples)
+      (parse-spec body)
+    (let (($subject (gensym)))
+      `(let ((,$subject ,subject))
+         (make-spec :desc ,desc
+                :subject ,$subject
+                :check (lambda () (funcall ,$subject))
+                ,@(unless (null prepare)
+                    `(:prepare (lambda () ,prepare)))
+                ,@(unless (null dispose)
+                    `(:dispose (lambda () ,dispose))))))))
 
 (defgeneric prepare (spec))
 (defmethod prepare ((spec spec))
@@ -90,5 +96,5 @@
                 (declare (ignorable c))
                 (return-from check)))
          (handler-bind ((condition #'do-nothing))
-           (funcall (spec-subject spec))))
+           (funcall (spec-check spec))))
     (dispose spec)))

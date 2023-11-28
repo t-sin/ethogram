@@ -93,13 +93,13 @@
                (signal "signal a condition")))
       (let ((spec (defspec "check flow is: preparation, checking and disposing"
                     :subject #'subject
-                    :prepare #'prepare
-                    :dispose #'dispose)))
+                    :prepare (prepare)
+                    :dispose (dispose))))
         (check spec)
         (assert (equal '(:prepare :check :dispose) (reverse logs)))))))
 
 (defun spec.spec-desc ()
-  (let ((spec (defspec "spec description")))
+  (let ((spec (defspec "spec description" :subject #'oddp)))
     (assert (string= (spec-desc spec) "spec description"))))
 
 (defun spec.define-example ()
