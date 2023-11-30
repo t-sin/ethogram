@@ -86,7 +86,7 @@
 (defun spec.parse-function-exampels.malformed.empty ()
   (let ((body '())
         (reason "empty"))
-    (verify-error-reason body reason)))
+    (verify-malformed-examples-error-reason body reason)))
 
 (defun spec.parse-function-exampels.parse-io-pair ()
   (let ((body '(:returns t :for 1)))
@@ -96,10 +96,10 @@
 (defun spec.parse-function-exampels.malformed.incomplete-io-pair ()
   (let ((body '(:returns t))
         (reason "incomplete input/output pair; :FOR ARGS is required"))
-    (verify-error-reason body reason))
+    (verify-malformed-examples-error-reason body reason))
   (let ((body '(:for 1))
         (reason "incomplete input/output pair; :RETURNS VALUES is required"))
-    (verify-error-reason body reason)))
+    (verify-malformed-examples-error-reason body reason)))
 
 (defun spec.define-example ()
   "define a function example"

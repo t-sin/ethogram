@@ -29,13 +29,13 @@
 
 (defun parse-function-examples (body)
   (when (null body)
-    (signal (make-condition 'malformed-function-examples-error
+    (signal (make-condition 'malformed-examples-error
                             :reason "empty")))
   (unless (member :for body)
-    (signal (make-condition 'malformed-function-examples-error
+    (signal (make-condition 'malformed-examples-error
                             :reason "incomplete input/output pair; :FOR ARGS is required")))
   (unless (member :returns body)
-    (signal (make-condition 'malformed-function-examples-error
+    (signal (make-condition 'malformed-examples-error
                             :reason "incomplete input/output pair; :RETURNS VALUES is required")))
   (values (getf body :for)
           (getf body :returns)))
