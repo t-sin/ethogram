@@ -177,6 +177,24 @@
                   :returns t :for 2))))
     (assert (not (check spec)))))
 
+(defun spec.output-spec-succeeded-result ()
+  (let ((spec (defspec "ODDP"
+                :subject #'oddp
+                (examples :function
+                  :returns t :for 1))))
+    (assert (string= (with-output-to-string (*standard-output*)
+                       (check spec))
+                     (format nil "a spec \"ODDP\" is succeeded~%")))))
+
+(defun spec.output-spec-failed-result ()
+  (let ((spec (defspec "ODDP"
+                :subject #'oddp
+                (examples :function
+                  :returns t :for 2))))
+    (assert (string= (with-output-to-string (*standard-output*)
+                       (check spec))
+                     (format nil "a spec \"ODDP\" is failed~%")))))
+
 (spec.check-flow)
 (spec.spec-desc)
 (spec.define-example)
@@ -189,3 +207,5 @@
 (spec.define-spec)
 (spec.check-spec-succeeds)
 (spec.check-spec-fails)
+(spec.output-spec-succeeded-result)
+(spec.output-spec-failed-result)

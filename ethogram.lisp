@@ -115,4 +115,9 @@
              (setf actual (multiple-value-list (funcall (spec-check spec))))
              (setf result (equal actual expected))))
       (dispose spec)
+      (format t "a spec ~s is ~a~%"
+              (spec-desc spec)
+              (if result
+                  "succeeded"
+                  "failed"))
       result)))
