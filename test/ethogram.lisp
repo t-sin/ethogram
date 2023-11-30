@@ -75,6 +75,32 @@
                   :returns t :for 1))))
     (assert (string= (spec-desc spec) "spec description"))))
 
+(defun verify-malformed-examples-error-reason (body reason)
+  (block check
+    (flet ((check-reason (c)
+             (assert (string= (slot-value c 'reason) reason))
+             (return-from check)))
+      (handler-bind ((malformed-examples-error #'check-reason))
+        (parse-function-examples body)))))
+
+(defun spec.parse-function-exampels.malformed.empty ()
+  (let ((body '())
+        (reason "empty"))
+    (verify-error-reason body reason)))
+
+(defun spec.parse-function-exampels.parse-io-pair ()
+  (let ((body '(:returns t :for 1)))
+    (assert (equal (multiple-value-list (parse-function-examples body))
+                   '(1 t)))))
+
+(defun spec.parse-function-exampels.malformed.incomplete-io-pair ()
+  (let ((body '(:returns t))
+        (reason "incomplete input/output pair; :FOR ARGS is required"))
+    (verify-error-reason body reason))
+  (let ((body '(:for 1))
+        (reason "incomplete input/output pair; :RETURNS VALUES is required"))
+    (verify-error-reason body reason)))
+
 (defun spec.define-example ()
   "define a function example"
   (let ((example (examples :function
@@ -198,6 +224,9 @@
 
 (spec.check-flow)
 (spec.spec-desc)
+(spec.parse-function-exampels.malformed.empty)
+(spec.parse-function-exampels.parse-io-pair)
+(spec.parse-function-exampels.malformed.incomplete-io-pair)
 (spec.define-example)
 (spec.parse-spec-body.empty-body-signaled-error)
 (spec.parse-spec-body.parse-subject)

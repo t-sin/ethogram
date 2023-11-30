@@ -10,6 +10,8 @@
    :spec-subject
    :spec-check
    ;; example
+   :malformed-examples-error
+   :parse-function-examples
    :examples
    :function-examples
    :function-examples-input
@@ -21,7 +23,20 @@
 (defstruct function-examples
   input output)
 
+(define-condition malformed-examples-error (error)
+  ((reason :initform nil
+           :initarg :reason)))
+
 (defun parse-function-examples (body)
+  (when (null body)
+    (signal (make-condition 'malformed-function-examples-error
+                            :reason "empty")))
+  (unless (member :for body)
+    (signal (make-condition 'malformed-function-examples-error
+                            :reason "incomplete input/output pair; :FOR ARGS is required")))
+  (unless (member :returns body)
+    (signal (make-condition 'malformed-function-examples-error
+                            :reason "incomplete input/output pair; :RETURNS VALUES is required")))
   (values (getf body :for)
           (getf body :returns)))
 
