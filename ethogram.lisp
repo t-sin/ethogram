@@ -31,29 +31,44 @@
   (when (null body)
     (signal (make-condition 'malformed-examples-error
                             :reason "empty")))
-  (unless (member :for body)
-    (signal (make-condition 'malformed-examples-error
-                            :reason "incomplete input/output pair; :FOR ARGS is required")))
-  (unless (member :returns body)
-    (signal (make-condition 'malformed-examples-error
-                            :reason "incomplete input/output pair; :RETURNS VALUES is required")))
-  (values (getf body :for)
-          (getf body :returns)))
+  (let (inputs outputs)
+    (loop
+      :named parse-loop
+      :for form := (first body)
+      :do (case form
+            (:returns
+             (push (second body) outputs)
+             (setf body (cddr body)))
+            (:for
+             (push (second body) inputs)
+             (setf body (cddr body)))
+            (t (return-from parse-loop))))
+    (when (zerop (length inputs))
+      (signal (make-condition 'malformed-examples-error
+                              :reason "there is no :FOR ARGLIST")))
+    (when (zerop (length outputs))
+      (signal (make-condition 'malformed-examples-error
+                              :reason "there is no :RETURNS VALUES")))
+    (unless (= (length inputs) (length outputs))
+      (signal (make-condition 'malformed-examples-error
+                              :reason "input/output must be a same length")))
+    (loop
+      :for i :in (nreverse inputs)
+      :for o :in (nreverse outputs)
+      :collect (list i o))))
 
 (defmacro examples (type &body body)
   (assert (eq type :function))
-  (multiple-value-bind (input output)
-      (parse-function-examples body)
+  (let ((pairs (parse-function-examples body)))
     (alexandria:with-gensyms ($input $output)
-      `(let ((,$input ',input)
-             (,$output ',output))
-         (make-function-examples
-          :input (if (or (null ,$input) (listp ,$input))
-                     ,$input
-                     (list ,$input))
-          :output (if (or (null ,$output) (listp ,$output))
-                      ,$output
-                      (list ,$output)))))))
+      `(list
+        ,@(loop
+            :for (input output) :in pairs
+            :collect `(let ((,$input '(,input))  ;; applyできるようにリストにいれている
+                            (,$output ',output))
+                        (make-function-examples
+                         :input ,$input
+                         :output ,$output)))))))
 
 (define-condition malformed-spec-error (error)
   ((reason :initform nil
@@ -92,19 +107,18 @@
 (defmacro defspec (desc &body body)
   (multiple-value-bind (subject prepare dispose examples)
       (parse-spec body)
-    (alexandria:with-gensyms ($subject $examples)
+    (alexandria:with-gensyms ($subject $examples $input)
       `(let ((,$subject ,subject)
              (,$examples ,examples))
          (make-spec :desc ,desc
-                :subject ,$subject
-                :check (lambda ()
-                         (apply ,$subject
-                                (function-examples-input ,$examples)))
-                ,@(when prepare
-                    `(:prepare (lambda () ,prepare)))
-                ,@(when dispose
-                    `(:dispose (lambda () ,dispose)))
-                :examples ,$examples)))))
+                    :subject ,$subject
+                    :check (lambda (,$input)
+                             (apply ,$subject ,$input))
+                    ,@(when prepare
+                        `(:prepare (lambda () ,prepare)))
+                    ,@(when dispose
+                        `(:dispose (lambda () ,dispose)))
+                    :examples ,$examples)))))
 
 (defgeneric prepare (spec))
 (defmethod prepare ((spec spec))
@@ -119,20 +133,24 @@
 (defgeneric check (spec))
 (defmethod check ((spec spec))
   (prepare spec)
-  (let (actual expected result)
-    (unwind-protect
-         (flet ((do-nothing (c)
-                  (declare (ignorable c))
-                  (format t "~a" c)
-                  (return-from check)))
-           (handler-bind ((condition #'do-nothing))
-             (setf expected (function-examples-output (spec-examples spec)))
-             (setf actual (multiple-value-list (funcall (spec-check spec))))
-             (setf result (equal actual expected))))
-      (dispose spec)
-      (format t "a spec ~s is ~a~%"
-              (spec-desc spec)
-              (if result
-                  "succeeded"
-                  "failed"))
-      result)))
+  (loop
+    :for example :in (spec-examples spec)
+    :for input := (function-examples-input example)
+    :for expected := (function-examples-output example)
+    :for actual := nil
+    :for result := nil
+    :do (unwind-protect
+             (flet ((do-nothing (c)
+                      (declare (ignorable c))
+                      (format t "~s" c)
+                      (return-from check)))
+               (handler-bind ((condition #'do-nothing))
+                 (setf actual (funcall (spec-check spec) input))
+                 (setf result (equal actual expected))))
+          (dispose spec)
+          (format t "a spec ~s is ~a~%"
+                  (spec-desc spec)
+                  (if result
+                      "succeeded"
+                      "failed")))
+    :collect result))

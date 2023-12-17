@@ -44,7 +44,9 @@
 ;; - [x] defspecの中身をパースできる
 ;; - [x] examplesマクロで定義した検査を実行できる
 ;; - [x] 検査の結果をstdioに即時出力する
-;; - [ ] 複数の検査を実行する (`(examples :function ...)`の中が複数)
+;; - [x] 複数の検査を実行する (`(examples :function ...)`の中が複数)
+;; - [ ] `(examples :function ...)`で返り値が多値のケースを考慮する: `(values ...)`と書く
+;; - [ ] `(examples :function ...)`で引数が複数のケースを考慮する: `:args (...)`と書く
 ;; - [ ] 検査の結果を収集する
 ;; - [ ] 収集した検査結果をstdioに書き出す
 ;; - [ ] 複数の検査を実行する (`(examples  ...)`自体が複数)
@@ -56,7 +58,8 @@
     (labels ((push-log (name) (push name logs))
              (prepare () (push-log :prepare))
              (dispose () (push-log :dispose))
-             (subject ()
+             (subject (_)
+               (declare (ignore _))
                (push-log :check)
                (signal "signal a condition")))
       (let ((spec (defspec "check flow is: preparation, checking and disposing"
@@ -90,43 +93,58 @@
 
 (defun spec.parse-function-exampels.parse-io-pair ()
   (let ((body '(:returns t :for 1)))
-    (assert (equal (multiple-value-list (parse-function-examples body))
-                   '(1 t)))))
+    (assert (equal (parse-function-examples body)
+                   '((1 t))))))
 
 (defun spec.parse-function-exampels.malformed.incomplete-io-pair ()
   (let ((body '(:returns t))
-        (reason "incomplete input/output pair; :FOR ARGS is required"))
+        (reason "there is no :FOR ARGLIST"))
     (verify-malformed-examples-error-reason body reason))
   (let ((body '(:for 1))
-        (reason "incomplete input/output pair; :RETURNS VALUES is required"))
+        (reason "there is no :RETURNS VALUES"))
     (verify-malformed-examples-error-reason body reason)))
+
+(defun spec.parse-function-examples.multiple-pairs ()
+  (let ((body '(:returns t :for 1
+                :returns nil :for 2
+                :returns t :for 3)))
+    (assert (equal (parse-function-examples body)
+                   '((1 t) (2 nil) (3 t))))))
 
 (defun spec.define-example ()
   "define a function example"
-  (let ((example (examples :function
-                   :returns 42 :for (6 9))))
-    (assert (typep example 'function-examples))
-    (let ((input (function-examples-input example)))
-      (assert (typep input 'list))
-      (assert (= (length input) 2))
-      (assert (= (elt input 0) 6))
-      (assert (= (elt input 1) 9)))
-    (let ((output (function-examples-output example)))
-      (assert (typep output 'list))
-      (assert (= (elt output 0) 42))))
-  (let ((example (examples :function
-                   :returns (1 2 3) :for (1 2 3))))
-    (assert (typep example 'function-examples))
-    (let ((input (function-examples-input example)))
-      (assert (typep input 'list))
-      (assert (= (elt input 0) 1))
-      (assert (= (elt input 1) 2))
-      (assert (= (elt input 2) 3)))
-    (let ((output (function-examples-output example)))
-      (assert (typep output 'list))
-      (assert (= (elt output 0) 1))
-      (assert (= (elt output 1) 2))
-      (assert (= (elt output 2) 3)))))
+  (let ((examples (examples :function
+                    :returns 42 :for (6 9))))
+    (assert (typep examples 'list))
+    (let ((example (elt examples 0)))
+      (assert (typep example 'function-examples))
+      (let ((input (function-examples-input example)))
+        (assert (typep input 'list))
+        (assert (= (length input) 1))
+        (let ((arg1 (elt input 0)))
+          (assert (typep arg1 'list))
+          (assert (= (elt arg1 0) 6))
+          (assert (= (elt arg1 1) 9))))
+      (let ((output (function-examples-output example)))
+        (assert (typep output 'number))
+        (assert (= output 42)))))
+  (let ((examples (examples :function
+                    :returns (1 2 3) :for (1 2 3))))
+    (assert (typep examples 'list))
+    (let ((example (elt examples 0)))
+      (assert (typep example 'function-examples))
+      (let ((input (function-examples-input example)))
+        (assert (typep input 'list))
+        (assert (= (length input) 1))
+        (let ((arg1 (elt input 0)))
+          (assert (= (elt arg1 0) 1))
+          (assert (= (elt arg1 1) 2))
+          (assert (= (elt arg1 2) 3))))
+      (let ((output (function-examples-output example)))
+        (assert (typep output 'list))
+        (assert (= (elt output 0) 1))
+        (assert (= (elt output 1) 2))
+        (assert (= (elt output 2) 3))))))
 
 (defun spec.parse-spec-body.empty-body-signaled-error ()
   (let ((body '()))
@@ -181,28 +199,37 @@
                           (examples :function :returns t :for 1))))))
 
 (defun spec.define-spec ()
-  (let ((spec (defspec "spec"
+  (let ((spec (defspec "defining spec"
                 :subject #'oddp
                 :prepare (print :ln)
                 (examples :function
                   :returns t :for 1))))
-    (assert (string= (spec-desc spec) "spec"))
+    (assert (string= (spec-desc spec) "defining spec"))
     (assert (eq (spec-subject spec) #'oddp))
     (assert (not (null (spec-check spec))))))
 
 (defun spec.check-spec-succeeds ()
-  (let ((spec (defspec "spec"
+  (let ((spec (defspec "spec will succeed"
                 :subject #'oddp
                 (examples :function
                   :returns t :for 1))))
-    (assert (check spec))))
+    (assert (equal (check spec) '(t)))))
 
 (defun spec.check-spec-fails ()
-  (let ((spec (defspec "spec"
+  (let ((spec (defspec "spec will fail"
                 :subject #'oddp
                 (examples :function
                   :returns t :for 2))))
-    (assert (not (check spec)))))
+    (assert (equal (check spec) '(nil)))))
+
+(defun spec.check-spec.with-multiple-io-pairs-succeeds ()
+  (let ((spec (defspec "all examples in spec will succeed"
+                :subject #'oddp
+                (examples :function
+                  :returns t :for 1
+                  :returns nil :for 2
+                  :returns t :for 3))))
+    (assert (equal (check spec) '(t t t)))))
 
 (defun spec.output-spec-succeeded-result ()
   (let ((spec (defspec "ODDP"
@@ -227,6 +254,7 @@
 (spec.parse-function-exampels.malformed.empty)
 (spec.parse-function-exampels.parse-io-pair)
 (spec.parse-function-exampels.malformed.incomplete-io-pair)
+(spec.parse-function-examples.multiple-pairs)
 (spec.define-example)
 (spec.parse-spec-body.empty-body-signaled-error)
 (spec.parse-spec-body.parse-subject)
@@ -237,5 +265,6 @@
 (spec.define-spec)
 (spec.check-spec-succeeds)
 (spec.check-spec-fails)
+(spec.check-spec.with-multiple-io-pairs-succeeds)
 (spec.output-spec-succeeded-result)
 (spec.output-spec-failed-result)
