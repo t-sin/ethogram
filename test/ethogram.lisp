@@ -45,7 +45,7 @@
 ;; - [x] examplesマクロで定義した検査を実行できる
 ;; - [x] 検査の結果をstdioに即時出力する
 ;; - [x] 複数の検査を実行する (`(examples :function ...)`の中が複数)
-;; - [ ] `(examples :function ...)`で返り値が多値のケースを考慮する: `(values ...)`と書く
+;; - [x] `(examples :function ...)`で返り値が多値のケースを考慮する: `(values ...)`と書く
 ;; - [ ] `(examples :function ...)`で引数が複数のケースを考慮する: `:args (...)`と書く
 ;; - [ ] 検査の結果を収集する
 ;; - [ ] 収集した検査結果をstdioに書き出す
@@ -96,6 +96,11 @@
     (assert (equal (parse-function-examples body)
                    '((1 t))))))
 
+(defun spec.parse-function-exapmles.allow-values-for-output ()
+  (let ((body '(:returns (values t nil) :for 1)))
+    (assert (equal (parse-function-examples body)
+                   '((1 (values t nil)))))))
+
 (defun spec.parse-function-exampels.malformed.incomplete-io-pair ()
   (let ((body '(:returns t))
         (reason "there is no :FOR ARGLIST"))
@@ -126,8 +131,11 @@
           (assert (= (elt arg1 0) 6))
           (assert (= (elt arg1 1) 9))))
       (let ((output (function-examples-output example)))
-        (assert (typep output 'number))
-        (assert (= output 42)))))
+        (assert (typep output 'list))
+        (assert (= (length output) 1))
+        (let ((ret1 (elt output 0)))
+          (assert (typep ret1 'number))
+          (assert (= ret1 42))))))
   (let ((examples (examples :function
                     :returns (1 2 3) :for (1 2 3))))
     (assert (typep examples 'list))
@@ -142,9 +150,12 @@
           (assert (= (elt arg1 2) 3))))
       (let ((output (function-examples-output example)))
         (assert (typep output 'list))
-        (assert (= (elt output 0) 1))
-        (assert (= (elt output 1) 2))
-        (assert (= (elt output 2) 3))))))
+        (assert (= (length output) 1))
+        (let ((ret1 (elt output 0)))
+          (assert (typep ret1 'list))
+          (assert (= (elt ret1 0) 1))
+          (assert (= (elt ret1 1) 2))
+          (assert (= (elt ret1 2) 3)))))))
 
 (defun spec.parse-spec-body.empty-body-signaled-error ()
   (let ((body '()))
@@ -231,6 +242,26 @@
                   :returns t :for 3))))
     (assert (equal (check spec) '(t t t)))))
 
+(defun spec.check-spec.with-multiple-values ()
+  (flet ((odd-even (n)
+           (let ((odd (oddp n)))
+             (values odd (not odd)))))
+    (let ((spec (defspec "this will succeed"
+                  :subject #'odd-even
+                  (examples :function
+                    :returns (values t nil) :for 1))))
+      (assert (equal (check spec) '(t))))
+    (let ((spec (defspec "this will fail"
+                  :subject #'odd-even
+                  (examples :function
+                    :returns (values t nil) :for 2))))
+      (assert (equal (check spec) '(nil))))
+    (let ((spec (defspec "this also will fail"
+                  :subject #'odd-even
+                  (examples :function
+                    :returns (t nil) :for 2))))
+      (assert (equal (check spec) '(nil))))))
+
 (defun spec.output-spec-succeeded-result ()
   (let ((spec (defspec "ODDP"
                 :subject #'oddp
@@ -253,6 +284,7 @@
 (spec.spec-desc)
 (spec.parse-function-exampels.malformed.empty)
 (spec.parse-function-exampels.parse-io-pair)
+(spec.parse-function-exapmles.allow-values-for-output)
 (spec.parse-function-exampels.malformed.incomplete-io-pair)
 (spec.parse-function-examples.multiple-pairs)
 (spec.define-example)
@@ -266,5 +298,6 @@
 (spec.check-spec-succeeds)
 (spec.check-spec-fails)
 (spec.check-spec.with-multiple-io-pairs-succeeds)
+(spec.check-spec.with-multiple-values)
 (spec.output-spec-succeeded-result)
 (spec.output-spec-failed-result)

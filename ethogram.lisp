@@ -65,7 +65,11 @@
         ,@(loop
             :for (input output) :in pairs
             :collect `(let ((,$input '(,input))  ;; applyできるようにリストにいれている
-                            (,$output ',output))
+                            (,$output ,(if (and (listp output)
+                                                (symbolp (first output))
+                                                (string= (symbol-name (first output)) "VALUES"))
+                                           `(multiple-value-list ,output)
+                                           `'(,output))))
                         (make-function-examples
                          :input ,$input
                          :output ,$output)))))))
@@ -145,7 +149,7 @@
                       (format t "~s" c)
                       (return-from check)))
                (handler-bind ((condition #'do-nothing))
-                 (setf actual (funcall (spec-check spec) input))
+                 (setf actual (multiple-value-list (funcall (spec-check spec) input)))
                  (setf result (equal actual expected))))
           (dispose spec)
           (format t "a spec ~s is ~a~%"
