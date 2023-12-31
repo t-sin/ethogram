@@ -46,7 +46,8 @@
 ;; - [x] 検査の結果をstdioに即時出力する
 ;; - [x] 複数の検査を実行する (`(examples :function ...)`の中が複数)
 ;; - [x] `(examples :function ...)`で返り値が多値のケースを考慮する: `(values ...)`と書く
-;; - [ ] `(examples :function ...)`で引数が複数のケースを考慮する: `:args (...)`と書く
+;; - [x] `(examples :function ...)`で引数が複数のケースを考慮する: `:args (...)`と書く
+;; - [ ] `(examples :function ...)`でむしろ:for (1引数のみのケース) をやめる
 ;; - [ ] 検査の結果を収集する
 ;; - [ ] 収集した検査結果をstdioに書き出す
 ;; - [ ] 複数の検査を実行する (`(examples  ...)`自体が複数)
@@ -98,12 +99,17 @@
 (defun spec.parse-function-exampels.parse-io-pair ()
   (let ((body '(:returns t :for 1)))
     (assert (equal (parse-function-examples body)
-                   '((1 t))))))
+                   '(((1) t))))))
+
+(defun spec.parse-funciton-examples.parse-multiple-inputs ()
+  (let ((body '(:returns t :args (1))))
+    (assert (equal (parse-function-examples body)
+                   '(((1) t))))))
 
 (defun spec.parse-function-exapmles.allow-values-for-output ()
   (let ((body '(:returns (values t nil) :for 1)))
     (assert (equal (parse-function-examples body)
-                   '((1 (values t nil)))))))
+                   '(((1) (values t nil)))))))
 
 (defun spec.parse-function-exampels.malformed.incomplete-io-pair ()
   (let ((body '(:returns t))
@@ -118,7 +124,7 @@
                 :returns nil :for 2
                 :returns t :for 3)))
     (assert (equal (parse-function-examples body)
-                   '((1 t) (2 nil) (3 t))))))
+                   '(((1) t) ((2) nil) ((3) t))))))
 
 (defun spec.define-example ()
   "define a function example"
@@ -288,6 +294,7 @@
 (spec.spec-desc)
 (spec.parse-function-exampels.malformed.empty)
 (spec.parse-function-exampels.parse-io-pair)
+(spec.parse-funciton-examples.parse-multiple-inputs)
 (spec.parse-function-exapmles.allow-values-for-output)
 (spec.parse-function-exampels.malformed.incomplete-io-pair)
 (spec.parse-function-examples.multiple-pairs)

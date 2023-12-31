@@ -40,6 +40,9 @@
              (push (second body) outputs)
              (setf body (cddr body)))
             (:for
+             (push (list (second body)) inputs)
+             (setf body (cddr body)))
+            (:args
              (push (second body) inputs)
              (setf body (cddr body)))
             (t (return-from parse-loop))))
@@ -64,7 +67,7 @@
       `(list
         ,@(loop
             :for (input output) :in pairs
-            :collect `(let ((,$input '(,input))  ;; applyできるようにリストにいれている
+            :collect `(let ((,$input ',input)
                             (,$output ,(if (and (listp output)
                                                 (symbolp (first output))
                                                 (string= (symbol-name (first output)) "VALUES"))
