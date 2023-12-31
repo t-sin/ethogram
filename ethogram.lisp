@@ -64,7 +64,9 @@
       `(list
         ,@(loop
             :for (input output) :in pairs
-            :collect `(let ((,$input ',input)
+            :collect `(let ((,$input (list ,@(loop
+                                               :for elem :in input
+                                               :collect elem)))
                             (,$output ,(if (and (listp output)
                                                 (symbolp (first output))
                                                 (string= (symbol-name (first output)) "VALUES"))

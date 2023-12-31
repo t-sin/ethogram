@@ -48,7 +48,7 @@
 ;; - [x] `(examples :function ...)`で返り値が多値のケースを考慮する: `(values ...)`と書く
 ;; - [x] `(examples :function ...)`で引数が複数のケースを考慮する: `:args (...)`と書く
 ;; - [x] `(examples :function ...)`でむしろ:for (1引数のみのケース) をやめる
-;; - [ ] `(examples :funcion ...)`に書く引数や返り値の値を評価する
+;; - [x] `(examples :funcion ...)`に書く引数や返り値の値を評価する
 ;;     - つまり`(examples :function :for (1+ ) :returns 1)`が成功すること
 ;; - [ ] 検査の結果を収集する
 ;; - [ ] 収集した検査結果をstdioに書き出す
@@ -123,7 +123,7 @@
 (defun spec.define-example ()
   "define a function example"
   (let ((examples (examples :function
-                    :returns 42 :for ((6 9)))))
+                    :returns 42 :for ('(6 9)))))
     (assert (typep examples 'list))
     (let ((example (elt examples 0)))
       (assert (typep example 'function-examples))
@@ -141,8 +141,8 @@
           (assert (typep ret1 'number))
           (assert (= ret1 42))))))
   (let ((examples (examples :function
-                    :returns (1 2 3) :for ((1 2 3)))))
-    (assert (typep examples 'list))
+                    :returns (1 2 3) :for ('(1 2 3)))))
+    (assert (typep examples 'list))o
     (let ((example (elt examples 0)))
       (assert (typep example 'function-examples))
       (let ((input (function-examples-input example)))
@@ -160,6 +160,16 @@
           (assert (= (elt ret1 0) 1))
           (assert (= (elt ret1 1) 2))
           (assert (= (elt ret1 2) 3)))))))
+
+(defun spec.define-example.evaluate-io-values ()
+  (let* ((examples (examples :function
+                     :returns (values (1+ 0) 2)
+                     :for (1 (+ 1 1))))
+         (example (elt examples 0))
+         (input (function-examples-input example))
+         (output (function-examples-output example)))
+    (assert (equal input '(1 2)))
+    (assert (equal output '(1 2)))))
 
 (defun spec.parse-spec-body.empty-body-signaled-error ()
   (let ((body '()))
@@ -292,6 +302,7 @@
 (spec.parse-function-exampels.malformed.incomplete-io-pair)
 (spec.parse-function-examples.multiple-pairs)
 (spec.define-example)
+(spec.define-example.evaluate-io-values)
 (spec.parse-spec-body.empty-body-signaled-error)
 (spec.parse-spec-body.parse-subject)
 (spec.parse-spec-body.subject-is-required)
