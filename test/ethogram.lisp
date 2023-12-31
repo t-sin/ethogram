@@ -52,6 +52,8 @@
 ;; - [ ] 複数の検査を実行する (`(examples  ...)`自体が複数)
 ;; - [ ] `:let NAME := INITFORM`で名前を束縛できる (初期化はオプショナル);;
 ;; - [ ] `(examples :sideeffect ...)`で副作用を検査できる
+;; - [ ] `(examples :funcion ...)`に書く引数や返り値の値を評価する
+;;     - つまり`(examples :function :for (1+ ) :returns 1)`が成功すること
 ;; - [ ] リネーム: `defsec`マクロ -> `catalog`マクロ
 ;; - [ ] このテスト自身をethogramのもので置き換える
 
