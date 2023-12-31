@@ -40,9 +40,6 @@
              (push (second body) outputs)
              (setf body (cddr body)))
             (:for
-             (push (list (second body)) inputs)
-             (setf body (cddr body)))
-            (:args
              (push (second body) inputs)
              (setf body (cddr body)))
             (t (return-from parse-loop))))

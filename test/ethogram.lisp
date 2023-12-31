@@ -12,26 +12,26 @@
 ;;   :subject #'oddp
 ;;
 ;;   (examples :function
-;;     :returns t :for 1)
+;;     :returns t :for (1))
 ;;
 ;;   (examples :function
 ;;     :about "first argument is an odd number"
-;;     :returns nil :for 0
-;;     :returns nil :for 2
-;;     :returns nil :for 10)
+;;     :returns nil :for (0)
+;;     :returns nil :for (2)
+;;     :returns nil :for (10))
 ;;
 ;;   (examples :group
 ;;     :about "first argument is not an odd number"
 ;;     (examples :function
 ;;       :about "non-zero numbers"
 ;;       :returns t
-;;       :for 1
-;;       :for 3
-;;       :for 1001)
+;;       :for (1)
+;;       :for (3)
+;;       :for (1001))
 ;;     (examples :function
 ;;       :about "a zero"
 ;;       :returns t
-;;       :for 0)))
+;;       :for (0))))
 
 ;; # TODO (上からやる)
 ;;
@@ -47,7 +47,7 @@
 ;; - [x] 複数の検査を実行する (`(examples :function ...)`の中が複数)
 ;; - [x] `(examples :function ...)`で返り値が多値のケースを考慮する: `(values ...)`と書く
 ;; - [x] `(examples :function ...)`で引数が複数のケースを考慮する: `:args (...)`と書く
-;; - [ ] `(examples :function ...)`でむしろ:for (1引数のみのケース) をやめる
+;; - [x] `(examples :function ...)`でむしろ:for (1引数のみのケース) をやめる
 ;; - [ ] 検査の結果を収集する
 ;; - [ ] 収集した検査結果をstdioに書き出す
 ;; - [ ] 複数の検査を実行する (`(examples  ...)`自体が複数)
@@ -63,8 +63,7 @@
     (labels ((push-log (name) (push name logs))
              (prepare () (push-log :prepare))
              (dispose () (push-log :dispose))
-             (subject (_)
-               (declare (ignore _))
+             (subject ()
                (push-log :check)
                (signal "signal a condition")))
       (let ((spec (defspec "check flow is: preparation, checking and disposing"
@@ -72,7 +71,7 @@
                     :prepare (prepare)
                     :dispose (dispose)
                     (examples :function
-                      :returns nil :for nil))))
+                      :returns nil :for ()))))
         (check spec)
         (assert (equal '(:prepare :check :dispose) (reverse logs)))))))
 
@@ -80,7 +79,7 @@
   (let ((spec (defspec "spec description"
                 :subject #'oddp
                 (examples :function
-                  :returns t :for 1))))
+                  :returns t :for (1)))))
     (assert (string= (spec-desc spec) "spec description"))))
 
 (defun verify-malformed-examples-error-reason (body reason)
@@ -97,17 +96,12 @@
     (verify-malformed-examples-error-reason body reason)))
 
 (defun spec.parse-function-exampels.parse-io-pair ()
-  (let ((body '(:returns t :for 1)))
-    (assert (equal (parse-function-examples body)
-                   '(((1) t))))))
-
-(defun spec.parse-funciton-examples.parse-multiple-inputs ()
-  (let ((body '(:returns t :args (1))))
+  (let ((body '(:returns t :for (1))))
     (assert (equal (parse-function-examples body)
                    '(((1) t))))))
 
 (defun spec.parse-function-exapmles.allow-values-for-output ()
-  (let ((body '(:returns (values t nil) :for 1)))
+  (let ((body '(:returns (values t nil) :for (1))))
     (assert (equal (parse-function-examples body)
                    '(((1) (values t nil)))))))
 
@@ -115,21 +109,21 @@
   (let ((body '(:returns t))
         (reason "there is no :FOR ARGLIST"))
     (verify-malformed-examples-error-reason body reason))
-  (let ((body '(:for 1))
+  (let ((body '(:for (1)))
         (reason "there is no :RETURNS VALUES"))
     (verify-malformed-examples-error-reason body reason)))
 
 (defun spec.parse-function-examples.multiple-pairs ()
-  (let ((body '(:returns t :for 1
-                :returns nil :for 2
-                :returns t :for 3)))
+  (let ((body '(:returns t :for (1)
+                :returns nil :for (2)
+                :returns t :for (3))))
     (assert (equal (parse-function-examples body)
                    '(((1) t) ((2) nil) ((3) t))))))
 
 (defun spec.define-example ()
   "define a function example"
   (let ((examples (examples :function
-                    :returns 42 :for (6 9))))
+                    :returns 42 :for ((6 9)))))
     (assert (typep examples 'list))
     (let ((example (elt examples 0)))
       (assert (typep example 'function-examples))
@@ -147,7 +141,7 @@
           (assert (typep ret1 'number))
           (assert (= ret1 42))))))
   (let ((examples (examples :function
-                    :returns (1 2 3) :for (1 2 3))))
+                    :returns (1 2 3) :for ((1 2 3)))))
     (assert (typep examples 'list))
     (let ((example (elt examples 0)))
       (assert (typep example 'function-examples))
@@ -212,19 +206,19 @@
 (defun spec.parse-spec-body.parse-examples ()
   (let ((body '(:subject #'oddp
                 :prepare (identity 42)
-                (examples :function :returns t :for 1))))
+                (examples :function :returns t :for (1)))))
     (assert (tree-equal (multiple-value-list (parse-spec body))
                         '(#'oddp
                           (identity 42)
                           nil
-                          (examples :function :returns t :for 1))))))
+                          (examples :function :returns t :for (1)))))))
 
 (defun spec.define-spec ()
   (let ((spec (defspec "defining spec"
                 :subject #'oddp
                 :prepare (print :ln)
                 (examples :function
-                  :returns t :for 1))))
+                  :returns t :for (1)))))
     (assert (string= (spec-desc spec) "defining spec"))
     (assert (eq (spec-subject spec) #'oddp))
     (assert (not (null (spec-check spec))))))
@@ -233,23 +227,23 @@
   (let ((spec (defspec "spec will succeed"
                 :subject #'oddp
                 (examples :function
-                  :returns t :for 1))))
+                  :returns t :for (1)))))
     (assert (equal (check spec) '(t)))))
 
 (defun spec.check-spec-fails ()
   (let ((spec (defspec "spec will fail"
                 :subject #'oddp
                 (examples :function
-                  :returns t :for 2))))
+                  :returns t :for (2)))))
     (assert (equal (check spec) '(nil)))))
 
 (defun spec.check-spec.with-multiple-io-pairs-succeeds ()
   (let ((spec (defspec "all examples in spec will succeed"
                 :subject #'oddp
                 (examples :function
-                  :returns t :for 1
-                  :returns nil :for 2
-                  :returns t :for 3))))
+                  :returns t :for (1)
+                  :returns nil :for (2)
+                  :returns t :for (3)))))
     (assert (equal (check spec) '(t t t)))))
 
 (defun spec.check-spec.with-multiple-values ()
@@ -259,24 +253,24 @@
     (let ((spec (defspec "this will succeed"
                   :subject #'odd-even
                   (examples :function
-                    :returns (values t nil) :for 1))))
+                    :returns (values t nil) :for (1)))))
       (assert (equal (check spec) '(t))))
     (let ((spec (defspec "this will fail"
                   :subject #'odd-even
                   (examples :function
-                    :returns (values t nil) :for 2))))
+                    :returns (values t nil) :for (2)))))
       (assert (equal (check spec) '(nil))))
     (let ((spec (defspec "this also will fail"
                   :subject #'odd-even
                   (examples :function
-                    :returns (t nil) :for 2))))
+                    :returns (t nil) :for (2)))))
       (assert (equal (check spec) '(nil))))))
 
 (defun spec.output-spec-succeeded-result ()
   (let ((spec (defspec "ODDP"
                 :subject #'oddp
                 (examples :function
-                  :returns t :for 1))))
+                  :returns t :for (1)))))
     (assert (string= (with-output-to-string (*standard-output*)
                        (check spec))
                      (format nil "a spec \"ODDP\" is succeeded~%")))))
@@ -285,7 +279,7 @@
   (let ((spec (defspec "ODDP"
                 :subject #'oddp
                 (examples :function
-                  :returns t :for 2))))
+                  :returns t :for (2)))))
     (assert (string= (with-output-to-string (*standard-output*)
                        (check spec))
                      (format nil "a spec \"ODDP\" is failed~%")))))
@@ -294,7 +288,6 @@
 (spec.spec-desc)
 (spec.parse-function-exampels.malformed.empty)
 (spec.parse-function-exampels.parse-io-pair)
-(spec.parse-funciton-examples.parse-multiple-inputs)
 (spec.parse-function-exapmles.allow-values-for-output)
 (spec.parse-function-exampels.malformed.incomplete-io-pair)
 (spec.parse-function-examples.multiple-pairs)
