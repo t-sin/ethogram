@@ -48,13 +48,13 @@
 ;; - [x] `(examples :function ...)`で返り値が多値のケースを考慮する: `(values ...)`と書く
 ;; - [x] `(examples :function ...)`で引数が複数のケースを考慮する: `:args (...)`と書く
 ;; - [x] `(examples :function ...)`でむしろ:for (1引数のみのケース) をやめる
+;; - [ ] `(examples :funcion ...)`に書く引数や返り値の値を評価する
+;;     - つまり`(examples :function :for (1+ ) :returns 1)`が成功すること
 ;; - [ ] 検査の結果を収集する
 ;; - [ ] 収集した検査結果をstdioに書き出す
 ;; - [ ] 複数の検査を実行する (`(examples  ...)`自体が複数)
 ;; - [ ] `:let NAME := INITFORM`で名前を束縛できる (初期化はオプショナル);;
 ;; - [ ] `(examples :sideeffect ...)`で副作用を検査できる
-;; - [ ] `(examples :funcion ...)`に書く引数や返り値の値を評価する
-;;     - つまり`(examples :function :for (1+ ) :returns 1)`が成功すること
 ;; - [ ] リネーム: `defsec`マクロ -> `catalog`マクロ
 ;; - [ ] このテスト自身をethogramのもので置き換える
 
