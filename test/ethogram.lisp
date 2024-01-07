@@ -1,7 +1,7 @@
-(defpackage :ethogram.spec
+(defpackage :ethogram.test
   (:use :cl
         :ethogram))
-(in-package :ethogram.spec)
+(in-package :ethogram.test)
 
 ;; # DSL example
 ;;
