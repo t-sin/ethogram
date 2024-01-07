@@ -32,6 +32,28 @@
 ;;       :about "a zero"
 ;;       :returns t
 ;;       :for (0))))
+;;
+;; # for sideeffects
+;;
+;; (defun make-adder (n)
+;;   (values (lambda () n)
+;;           (lambda () (incf n))))
+;;
+;; (defentry "a function increase its internal integer value"
+;;   ; subjectはそのまま使われるとは限らない
+;;   ; 中の:subjectで上書きされることもある
+;;   ; でも主題はこいつ、という明示
+;;   ; そうすると、descよりsubjectが上では...？ -> そうかも
+;;   :subject #'make-adder
+;;
+;;   (examples :sideeffect
+;;     ; :letは毎回初期化されないほうがいいとも思う…が…どうだろ…
+;;     :let (getter adder) := (make-adder 0)
+;;     :pre (zerop (getter))
+;;     :do (adder)
+;;     :post (= (getter) 1)))
+;;
+;;   ;;もうちょっと複雑な例考える (0で止まる引くやつ?)
 
 ;; # TODO (上からやる)
 ;;
@@ -51,6 +73,9 @@
 ;; - [x] `(examples :funcion ...)`に書く引数や返り値の値を評価する
 ;;     - つまり`(examples :function :for (1+ ) :returns 1)`が成功すること
 ;; - [x] defentryで定義した検査を保持・一覧取得・クリアできる
+;; - [ ] entryはsubjectで分類される
+;;     - cataloguesリストの要素はsubject->entryリストのハッシュテーブル
+;;     - cataloguesリストはなにかをキーにする必要はない…？ パッケージとか…？
 ;; - [ ] 検査の結果を収集する
 ;; - [ ] 収集した検査結果をstdioに書き出す
 ;; - [ ] 複数の検査を実行する (`(examples  ...)`自体が複数)
