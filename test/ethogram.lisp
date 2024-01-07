@@ -305,25 +305,33 @@
     (assert (zerop (length (all-catalogues))))))
 
 (spec.check-flow)
+
 (spec.spec-desc)
+
 (spec.parse-function-exampels.malformed.empty)
 (spec.parse-function-exampels.parse-io-pair)
 (spec.parse-function-exapmles.allow-values-for-output)
 (spec.parse-function-exampels.malformed.incomplete-io-pair)
 (spec.parse-function-examples.multiple-pairs)
+
 (spec.define-example)
 (spec.define-example.evaluate-io-values)
+
 (spec.parse-spec-body.empty-body-signaled-error)
 (spec.parse-spec-body.parse-subject)
 (spec.parse-spec-body.subject-is-required)
 (spec.parse-spec-body.parse-prepare)
 (spec.parse-spec-body.parse-dispose)
 (spec.parse-spec-body.parse-examples)
+
 (spec.define-spec)
+
 (spec.check-spec-succeeds)
 (spec.check-spec-fails)
 (spec.check-spec.with-multiple-io-pairs-succeeds)
 (spec.check-spec.with-multiple-values)
+
 (spec.output-spec-succeeded-result)
 (spec.output-spec-failed-result)
+
 (spec.store-and-clear-catalogues)
