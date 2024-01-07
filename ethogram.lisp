@@ -1,14 +1,14 @@
 (defpackage :ethogram
   (:use :cl)
   (:export
-   ;; spec
-   :malformed-spec-error
+   ;; entry
+   :malformed-entry-error
    :reason
-   :parse-spec
+   :parse-entry
    :defspec
-   :spec-desc
-   :spec-subject
-   :spec-check
+   :entry-desc
+   :entry-subject
+   :entry-check
    ;; example
    :malformed-examples-error
    :parse-function-examples
@@ -83,13 +83,13 @@
                          :input ,$input
                          :output ,$output)))))))
 
-(define-condition malformed-spec-error (error)
+(define-condition malformed-entry-error (error)
   ((reason :initform nil
            :initarg :reason)))
 
-(defun parse-spec (body)
+(defun parse-entry (body)
   (when (null body)
-    (signal (make-condition 'malformed-spec-error
+    (signal (make-condition 'malformed-entry-error
                             :reason "empty")))
   (let (subject prepare dispose examples)
     (loop
@@ -105,11 +105,11 @@
             (list (setf examples form)
                   (setf body (rest body)))))
     (unless subject
-      (signal (make-condition 'malformed-spec-error
+      (signal (make-condition 'malformed-entry-error
                               :reason ":SUBJECT is required")))
     (values subject prepare dispose examples)))
 
-(defstruct spec
+(defstruct entry
   desc
   subject
   prepare
@@ -119,37 +119,37 @@
 
 (defmacro defspec (desc &body body)
   (multiple-value-bind (subject prepare dispose examples)
-      (parse-spec body)
-    (alexandria:with-gensyms ($subject $examples $input $spec)
+      (parse-entry body)
+    (alexandria:with-gensyms ($subject $examples $input $entry)
       `(let* ((,$subject ,subject)
               (,$examples ,examples)
-              (,$spec (make-spec :desc ,desc
-                                 :subject ,$subject
-                                 :check (lambda (,$input)
-                                          (apply ,$subject ,$input))
-                                 ,@(when prepare
-                                     `(:prepare (lambda () ,prepare)))
-                                 ,@(when dispose
-                                     `(:dispose (lambda () ,dispose)))
-                                 :examples ,$examples)))
-         (push ,$spec *catalogues*)
-         ,$spec))))
+              (,$entry (make-entry :desc ,desc
+                                   :subject ,$subject
+                                   :check (lambda (,$input)
+                                            (apply ,$subject ,$input))
+                                   ,@(when prepare
+                                       `(:prepare (lambda () ,prepare)))
+                                   ,@(when dispose
+                                       `(:dispose (lambda () ,dispose)))
+                                   :examples ,$examples)))
+         (push ,$entry *catalogues*)
+         ,$entry))))
 
-(defgeneric prepare (spec))
-(defmethod prepare ((spec spec))
-  (unless (null (spec-prepare spec))
-    (funcall (spec-prepare spec))))
+(defgeneric prepare (entry))
+(defmethod prepare ((entry entry))
+  (unless (null (entry-prepare entry))
+    (funcall (entry-prepare entry))))
 
-(defgeneric dispose (spec))
-(defmethod dispose ((spec spec))
-  (unless (null (spec-dispose spec))
-    (funcall (spec-dispose spec))))
+(defgeneric dispose (entry))
+(defmethod dispose ((entry entry))
+  (unless (null (entry-dispose entry))
+    (funcall (entry-dispose entry))))
 
-(defgeneric check (spec))
-(defmethod check ((spec spec))
-  (prepare spec)
+(defgeneric check (entry))
+(defmethod check ((entry entry))
+  (prepare entry)
   (loop
-    :for example :in (spec-examples spec)
+    :for example :in (entry-examples entry)
     :for input := (function-examples-input example)
     :for expected := (function-examples-output example)
     :for actual := nil
@@ -160,11 +160,11 @@
                       (format t "~s" c)
                       (return-from check)))
                (handler-bind ((condition #'do-nothing))
-                 (setf actual (multiple-value-list (funcall (spec-check spec) input)))
+                 (setf actual (multiple-value-list (funcall (entry-check entry) input)))
                  (setf result (equal actual expected))))
-          (dispose spec)
+          (dispose entry)
           (format t "a spec ~s is ~a~%"
-                  (spec-desc spec)
+                  (entry-desc entry)
                   (if result
                       "succeeded"
                       "failed")))

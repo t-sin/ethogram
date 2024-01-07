@@ -39,7 +39,7 @@
 ;; - [x] 検査の前に:prepareを実行する
 ;; - [x] 検査の後に:disposeを実行する
 ;; - [x] 検査がコンディションを投げても:disposeを実行する
-;; - [x] 検査のタイトルをspec-descで取得できる
+;; - [x] 検査のタイトルをentry-descで取得できる
 ;; - [x] `(examples :function ...)`で検査内容を定義できる
 ;; - [x] defspecの中身をパースできる
 ;; - [x] examplesマクロで定義した検査を実行できる
@@ -76,12 +76,12 @@
         (check spec)
         (assert (equal '(:prepare :check :dispose) (reverse logs)))))))
 
-(defun spec.spec-desc ()
+(defun spec.entry-desc ()
   (let ((spec (defspec "spec description"
                 :subject #'oddp
                 (examples :function
                   :returns t :for (1)))))
-    (assert (string= (spec-desc spec) "spec description"))))
+    (assert (string= (entry-desc spec) "spec description"))))
 
 (defun verify-malformed-examples-error-reason (body reason)
   (block check
@@ -172,53 +172,53 @@
     (assert (equal input '(1 2)))
     (assert (equal output '(1 2)))))
 
-(defun spec.parse-spec-body.empty-body-signaled-error ()
+(defun spec.parse-entry-body.empty-body-signaled-error ()
   (let ((body '()))
     (block check
       (flet ((check-reason (c)
                (assert (string= (slot-value c 'reason) "empty"))
                (return-from check)))
-        (handler-bind ((malformed-spec-error #'check-reason))
-          (parse-spec body)
+        (handler-bind ((malformed-entry-error #'check-reason))
+          (parse-entry body)
           (assert nil))))))
 
-(defun spec.parse-spec-body.parse-subject ()
+(defun spec.parse-entry-body.parse-subject ()
   (let ((body '(:subject #'oddp)))
-    (assert (eq (parse-spec body) '#'oddp))))
+    (assert (eq (parse-entry body) '#'oddp))))
 
-(defun spec.parse-spec-body.parse-prepare ()
+(defun spec.parse-entry-body.parse-prepare ()
   (let ((body '(:subject #'oddp
                 :prepare (identity 42))))
-    (assert (equal (multiple-value-list (parse-spec body))
+    (assert (equal (multiple-value-list (parse-entry body))
                    '(#'oddp
                      (identity 42)
                      nil
                      nil)))))
 
-(defun spec.parse-spec-body.parse-dispose ()
+(defun spec.parse-entry-body.parse-dispose ()
   (let ((body '(:subject #'oddp
                 :prepare (identity 42)
                 :dispose (identity 45))))
-    (assert (equal (multiple-value-list (parse-spec body))
+    (assert (equal (multiple-value-list (parse-entry body))
                    '(#'oddp
                      (identity 42)
                      (identity 45)
                      nil)))))
 
-(defun spec.parse-spec-body.subject-is-required ()
+(defun spec.parse-entry-body.subject-is-required ()
   (let ((body `(:prepare '(identity 42))))
     (block check
       (flet ((check-reason (c)
                (assert (string= (slot-value c 'reason) ":SUBJECT is required"))
                (return-from check)))
-        (handler-bind ((malformed-spec-error #'check-reason))
-          (parse-spec body))))))
+        (handler-bind ((malformed-entry-error #'check-reason))
+          (parse-entry body))))))
 
-(defun spec.parse-spec-body.parse-examples ()
+(defun spec.parse-entry-body.parse-examples ()
   (let ((body '(:subject #'oddp
                 :prepare (identity 42)
                 (examples :function :returns t :for (1)))))
-    (assert (tree-equal (multiple-value-list (parse-spec body))
+    (assert (tree-equal (multiple-value-list (parse-entry body))
                         '(#'oddp
                           (identity 42)
                           nil
@@ -230,9 +230,9 @@
                 :prepare (print :ln)
                 (examples :function
                   :returns t :for (1)))))
-    (assert (string= (spec-desc spec) "defining spec"))
-    (assert (eq (spec-subject spec) #'oddp))
-    (assert (not (null (spec-check spec))))))
+    (assert (string= (entry-desc spec) "defining spec"))
+    (assert (eq (entry-subject spec) #'oddp))
+    (assert (not (null (entry-check spec))))))
 
 (defun spec.check-spec-succeeds ()
   (let ((spec (defspec "spec will succeed"
@@ -306,7 +306,7 @@
 
 (spec.check-flow)
 
-(spec.spec-desc)
+(spec.entry-desc)
 
 (spec.parse-function-exampels.malformed.empty)
 (spec.parse-function-exampels.parse-io-pair)
@@ -317,12 +317,12 @@
 (spec.define-example)
 (spec.define-example.evaluate-io-values)
 
-(spec.parse-spec-body.empty-body-signaled-error)
-(spec.parse-spec-body.parse-subject)
-(spec.parse-spec-body.subject-is-required)
-(spec.parse-spec-body.parse-prepare)
-(spec.parse-spec-body.parse-dispose)
-(spec.parse-spec-body.parse-examples)
+(spec.parse-entry-body.empty-body-signaled-error)
+(spec.parse-entry-body.parse-subject)
+(spec.parse-entry-body.subject-is-required)
+(spec.parse-entry-body.parse-prepare)
+(spec.parse-entry-body.parse-dispose)
+(spec.parse-entry-body.parse-examples)
 
 (spec.define-spec)
 
