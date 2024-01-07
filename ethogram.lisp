@@ -5,7 +5,7 @@
    :malformed-entry-error
    :reason
    :parse-entry
-   :defspec
+   :defentry
    :entry-desc
    :entry-subject
    :entry-check
@@ -117,7 +117,7 @@
   examples
   check)
 
-(defmacro defspec (desc &body body)
+(defmacro defentry (desc &body body)
   (multiple-value-bind (subject prepare dispose examples)
       (parse-entry body)
     (alexandria:with-gensyms ($subject $examples $input $entry)

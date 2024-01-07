@@ -8,7 +8,7 @@
 ;; ;; 引数は&bodyにしてエディタのインデントを減らす
 ;; (defmacro examples (type &body body))
 ;;
-;; (defspec "a function to check number's oddness"
+;; (defentry "a function to check number's oddness"
 ;;   :subject #'oddp
 ;;
 ;;   (examples :function
@@ -41,7 +41,7 @@
 ;; - [x] 検査がコンディションを投げても:disposeを実行する
 ;; - [x] 検査のタイトルをentry-descで取得できる
 ;; - [x] `(examples :function ...)`で検査内容を定義できる
-;; - [x] defspecの中身をパースできる
+;; - [x] defentryの中身をパースできる
 ;; - [x] examplesマクロで定義した検査を実行できる
 ;; - [x] 検査の結果をstdioに即時出力する
 ;; - [x] 複数の検査を実行する (`(examples :function ...)`の中が複数)
@@ -50,7 +50,7 @@
 ;; - [x] `(examples :function ...)`でむしろ:for (1引数のみのケース) をやめる
 ;; - [x] `(examples :funcion ...)`に書く引数や返り値の値を評価する
 ;;     - つまり`(examples :function :for (1+ ) :returns 1)`が成功すること
-;; - [x] defspecで定義した検査を保持・一覧取得・クリアできる
+;; - [x] defentryで定義した検査を保持・一覧取得・クリアできる
 ;; - [ ] 検査の結果を収集する
 ;; - [ ] 収集した検査結果をstdioに書き出す
 ;; - [ ] 複数の検査を実行する (`(examples  ...)`自体が複数)
@@ -67,7 +67,7 @@
              (subject ()
                (push-log :check)
                (signal "signal a condition")))
-      (let ((spec (defspec "check flow is: preparation, checking and disposing"
+      (let ((spec (defentry "check flow is: preparation, checking and disposing"
                     :subject #'subject
                     :prepare (prepare)
                     :dispose (dispose)
@@ -77,7 +77,7 @@
         (assert (equal '(:prepare :check :dispose) (reverse logs)))))))
 
 (defun spec.entry-desc ()
-  (let ((spec (defspec "spec description"
+  (let ((spec (defentry "spec description"
                 :subject #'oddp
                 (examples :function
                   :returns t :for (1)))))
@@ -225,7 +225,7 @@
                           (examples :function :returns t :for (1)))))))
 
 (defun spec.define-spec ()
-  (let ((spec (defspec "defining spec"
+  (let ((spec (defentry "defining spec"
                 :subject #'oddp
                 :prepare (print :ln)
                 (examples :function
@@ -235,21 +235,21 @@
     (assert (not (null (entry-check spec))))))
 
 (defun spec.check-spec-succeeds ()
-  (let ((spec (defspec "spec will succeed"
+  (let ((spec (defentry "spec will succeed"
                 :subject #'oddp
                 (examples :function
                   :returns t :for (1)))))
     (assert (equal (check spec) '(t)))))
 
 (defun spec.check-spec-fails ()
-  (let ((spec (defspec "spec will fail"
+  (let ((spec (defentry "spec will fail"
                 :subject #'oddp
                 (examples :function
                   :returns t :for (2)))))
     (assert (equal (check spec) '(nil)))))
 
 (defun spec.check-spec.with-multiple-io-pairs-succeeds ()
-  (let ((spec (defspec "all examples in spec will succeed"
+  (let ((spec (defentry "all examples in spec will succeed"
                 :subject #'oddp
                 (examples :function
                   :returns t :for (1)
@@ -261,24 +261,24 @@
   (flet ((odd-even (n)
            (let ((odd (oddp n)))
              (values odd (not odd)))))
-    (let ((spec (defspec "this will succeed"
+    (let ((spec (defentry "this will succeed"
                   :subject #'odd-even
                   (examples :function
                     :returns (values t nil) :for (1)))))
       (assert (equal (check spec) '(t))))
-    (let ((spec (defspec "this will fail"
+    (let ((spec (defentry "this will fail"
                   :subject #'odd-even
                   (examples :function
                     :returns (values t nil) :for (2)))))
       (assert (equal (check spec) '(nil))))
-    (let ((spec (defspec "this also will fail"
+    (let ((spec (defentry "this also will fail"
                   :subject #'odd-even
                   (examples :function
                     :returns (t nil) :for (2)))))
       (assert (equal (check spec) '(nil))))))
 
 (defun spec.output-spec-succeeded-result ()
-  (let ((spec (defspec "ODDP"
+  (let ((spec (defentry "ODDP"
                 :subject #'oddp
                 (examples :function
                   :returns t :for (1)))))
@@ -287,7 +287,7 @@
                      (format nil "a spec \"ODDP\" is succeeded~%")))))
 
 (defun spec.output-spec-failed-result ()
-  (let ((spec (defspec "ODDP"
+  (let ((spec (defentry "ODDP"
                 :subject #'oddp
                 (examples :function
                   :returns t :for (2)))))
@@ -296,7 +296,7 @@
                      (format nil "a spec \"ODDP\" is failed~%")))))
 
 (defun spec.store-and-clear-catalogues ()
-  (let ((spec (defspec "IDENTITY"
+  (let ((spec (defentry "IDENTITY"
                 :subject #'identity
                 (examples :function
                   :returns t :for (t)))))
