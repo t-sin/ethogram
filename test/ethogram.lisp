@@ -50,6 +50,7 @@
 ;; - [x] `(examples :function ...)`でむしろ:for (1引数のみのケース) をやめる
 ;; - [x] `(examples :funcion ...)`に書く引数や返り値の値を評価する
 ;;     - つまり`(examples :function :for (1+ ) :returns 1)`が成功すること
+;; - [x] defspecで定義した検査を保持・一覧取得・クリアできる
 ;; - [ ] 検査の結果を収集する
 ;; - [ ] 収集した検査結果をstdioに書き出す
 ;; - [ ] 複数の検査を実行する (`(examples  ...)`自体が複数)
@@ -294,6 +295,15 @@
                        (check spec))
                      (format nil "a spec \"ODDP\" is failed~%")))))
 
+(defun spec.store-and-clear-catalogues ()
+  (let ((spec (defspec "IDENTITY"
+                :subject #'identity
+                (examples :function
+                  :returns t :for (t)))))
+    (assert (not (zerop (length (all-catalogues)))))
+    (clear-catalogues)
+    (assert (zerop (length (all-catalogues))))))
+
 (spec.check-flow)
 (spec.spec-desc)
 (spec.parse-function-exampels.malformed.empty)
@@ -316,3 +326,4 @@
 (spec.check-spec.with-multiple-values)
 (spec.output-spec-succeeded-result)
 (spec.output-spec-failed-result)
+(spec.store-and-clear-catalogues)

@@ -16,9 +16,16 @@
    :function-examples
    :function-examples-input
    :function-examples-output
-   ;; methods
-   :check))
+   ;; checking
+   :check
+   ;; introspection
+   :all-catalogues
+   :clear-catalogues))
 (in-package :ethogram)
+
+(defparameter *catalogues* nil)
+(defun all-catalogues () *catalogues*)
+(defun clear-catalogues () (setf *catalogues* nil))
 
 (defstruct function-examples
   input output)
@@ -113,18 +120,20 @@
 (defmacro defspec (desc &body body)
   (multiple-value-bind (subject prepare dispose examples)
       (parse-spec body)
-    (alexandria:with-gensyms ($subject $examples $input)
-      `(let ((,$subject ,subject)
-             (,$examples ,examples))
-         (make-spec :desc ,desc
-                    :subject ,$subject
-                    :check (lambda (,$input)
-                             (apply ,$subject ,$input))
-                    ,@(when prepare
-                        `(:prepare (lambda () ,prepare)))
-                    ,@(when dispose
-                        `(:dispose (lambda () ,dispose)))
-                    :examples ,$examples)))))
+    (alexandria:with-gensyms ($subject $examples $input $spec)
+      `(let* ((,$subject ,subject)
+              (,$examples ,examples)
+              (,$spec (make-spec :desc ,desc
+                                 :subject ,$subject
+                                 :check (lambda (,$input)
+                                          (apply ,$subject ,$input))
+                                 ,@(when prepare
+                                     `(:prepare (lambda () ,prepare)))
+                                 ,@(when dispose
+                                     `(:dispose (lambda () ,dispose)))
+                                 :examples ,$examples)))
+         (push ,$spec *catalogues*)
+         ,$spec))))
 
 (defgeneric prepare (spec))
 (defmethod prepare ((spec spec))
