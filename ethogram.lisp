@@ -23,9 +23,10 @@
    :clear-catalogues))
 (in-package :ethogram)
 
-(defparameter *catalogues* nil)
+(defparameter *catalogues* (make-hash-table))
 (defun all-catalogues () *catalogues*)
-(defun clear-catalogues () (setf *catalogues* nil))
+(defun clear-catalogues ()
+  (setf *catalogues* (make-hash-table)))
 
 (defstruct function-examples
   input output)
@@ -132,7 +133,7 @@
                                    ,@(when dispose
                                        `(:dispose (lambda () ,dispose)))
                                    :examples ,$examples)))
-         (push ,$entry *catalogues*)
+         (alexandria:nconcf (gethash ,$subject *catalogues*) (list ,$entry))
          ,$entry))))
 
 (defgeneric prepare (entry))

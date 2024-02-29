@@ -73,7 +73,7 @@
 ;; - [x] `(examples :funcion ...)`に書く引数や返り値の値を評価する
 ;;     - つまり`(examples :function :for (1+ ) :returns 1)`が成功すること
 ;; - [x] defentryで定義した検査を保持・一覧取得・クリアできる
-;; - [ ] entryはsubjectで分類される
+;; - [x] entryはsubjectで分類される
 ;;     - cataloguesリストの要素はsubject->entryリストのハッシュテーブル
 ;;     - cataloguesリストはなにかをキーにする必要はない…？ パッケージとか…？
 ;; - [ ] 検査の結果を収集する
@@ -325,9 +325,21 @@
                 :subject #'identity
                 (examples :function
                   :returns t :for (t)))))
-    (assert (not (zerop (length (all-catalogues)))))
+    (assert (not (zerop (hash-table-count (all-catalogues)))))
     (clear-catalogues)
-    (assert (zerop (length (all-catalogues))))))
+    (assert (zerop (hash-table-count (all-catalogues))))))
+
+(defun spec.get-entry-with-subject ()
+  (clear-catalogues)
+  (let ((spec1 (defentry "test 1 for #'oddp"
+                 :subject #'oddp))
+        (spec2 (defentry "test 2 for #'oddp"
+                 :subject #'oddp)))
+    (assert (typep (all-catalogues) 'hash-table))
+    (assert (typep (gethash #'oddp (all-catalogues)) 'list))
+    (let ((oddp-entries (gethash #'oddp (all-catalogues))))
+      (assert (string= (entry-desc (elt oddp-entries 0)) "test 1 for #'oddp"))
+      (assert (string= (entry-desc (elt oddp-entries 1)) "test 2 for #'oddp")))))
 
 (spec.check-flow)
 
@@ -360,3 +372,4 @@
 (spec.output-spec-failed-result)
 
 (spec.store-and-clear-catalogues)
+(spec.get-entry-with-subject)
