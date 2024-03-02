@@ -1,14 +1,14 @@
 (defpackage :ethogram
   (:use :cl)
   (:export
-   ;; entry
-   :malformed-entry-error
+   ;; behavior
+   :malformed-behavior-error
    :reason
-   :parse-entry
-   :defentry
-   :entry-desc
-   :entry-subject
-   :entry-check
+   :parse-behavior
+   :behavior
+   :behavior-desc
+   :behavior-subject
+   :behavior-check
    ;; example
    :malformed-examples-error
    :parse-function-examples
@@ -84,13 +84,13 @@
                          :input ,$input
                          :output ,$output)))))))
 
-(define-condition malformed-entry-error (error)
+(define-condition malformed-behavior-error (error)
   ((reason :initform nil
            :initarg :reason)))
 
-(defun parse-entry (body)
+(defun parse-behavior (body)
   (when (null body)
-    (signal (make-condition 'malformed-entry-error
+    (signal (make-condition 'malformed-behavior-error
                             :reason "empty")))
   (let (subject prepare dispose examples)
     (loop
@@ -106,11 +106,11 @@
             (list (setf examples form)
                   (setf body (rest body)))))
     (unless subject
-      (signal (make-condition 'malformed-entry-error
+      (signal (make-condition 'malformed-behavior-error
                               :reason ":SUBJECT is required")))
     (values subject prepare dispose examples)))
 
-(defstruct entry
+(defstruct behavior
   desc
   subject
   prepare
@@ -118,13 +118,13 @@
   examples
   check)
 
-(defmacro defentry (desc &body body)
+(defmacro behavior (desc &body body)
   (multiple-value-bind (subject prepare dispose examples)
-      (parse-entry body)
-    (alexandria:with-gensyms ($subject $examples $input $entry)
+      (parse-behavior body)
+    (alexandria:with-gensyms ($subject $examples $input $behavior)
       `(let* ((,$subject ,subject)
               (,$examples ,examples)
-              (,$entry (make-entry :desc ,desc
+              (,$behavior (make-behavior :desc ,desc
                                    :subject ,$subject
                                    :check (lambda (,$input)
                                             (apply ,$subject ,$input))
@@ -133,24 +133,24 @@
                                    ,@(when dispose
                                        `(:dispose (lambda () ,dispose)))
                                    :examples ,$examples)))
-         (alexandria:nconcf (gethash ,$subject *catalogs*) (list ,$entry))
-         ,$entry))))
+         (alexandria:nconcf (gethash ,$subject *catalogs*) (list ,$behavior))
+         ,$behavior))))
 
-(defgeneric prepare (entry))
-(defmethod prepare ((entry entry))
-  (unless (null (entry-prepare entry))
-    (funcall (entry-prepare entry))))
+(defgeneric prepare (behavior))
+(defmethod prepare ((behavior behavior))
+  (unless (null (behavior-prepare behavior))
+    (funcall (behavior-prepare behavior))))
 
-(defgeneric dispose (entry))
-(defmethod dispose ((entry entry))
-  (unless (null (entry-dispose entry))
-    (funcall (entry-dispose entry))))
+(defgeneric dispose (behavior))
+(defmethod dispose ((behavior behavior))
+  (unless (null (behavior-dispose behavior))
+    (funcall (behavior-dispose behavior))))
 
-(defgeneric check (entry))
-(defmethod check ((entry entry))
-  (prepare entry)
+(defgeneric check (behavior))
+(defmethod check ((behavior behavior))
+  (prepare behavior)
   (loop
-    :for example :in (entry-examples entry)
+    :for example :in (behavior-examples behavior)
     :for input := (function-examples-input example)
     :for expected := (function-examples-output example)
     :for actual := nil
@@ -161,11 +161,11 @@
                       (format t "~s" c)
                       (return-from check)))
                (handler-bind ((condition #'do-nothing))
-                 (setf actual (multiple-value-list (funcall (entry-check entry) input)))
+                 (setf actual (multiple-value-list (funcall (behavior-check behavior) input)))
                  (setf result (equal actual expected))))
-          (dispose entry)
+          (dispose behavior)
           (format t "a spec ~s is ~a~%"
-                  (entry-desc entry)
+                  (behavior-desc behavior)
                   (if result
                       "succeeded"
                       "failed")))

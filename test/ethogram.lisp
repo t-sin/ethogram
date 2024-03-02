@@ -8,7 +8,7 @@
 ;; ;; 引数は&bodyにしてエディタのインデントを減らす
 ;; (defmacro examples (type &body body))
 ;;
-;; (defentry "a function to check number's oddness"
+;; (behavior "a function to check number's oddness"
 ;;   :subject #'oddp
 ;;
 ;;   (examples :function
@@ -39,7 +39,7 @@
 ;;   (values (lambda () n)
 ;;           (lambda () (incf n))))
 ;;
-;; (defentry "a function increase its internal integer value"
+;; (behavior "a function increase its internal integer value"
 ;;   ; subjectはそのまま使われるとは限らない
 ;;   ; 中の:subjectで上書きされることもある
 ;;   ; でも主題はこいつ、という明示
@@ -61,9 +61,9 @@
 ;; - [x] 検査の前に:prepareを実行する
 ;; - [x] 検査の後に:disposeを実行する
 ;; - [x] 検査がコンディションを投げても:disposeを実行する
-;; - [x] 検査のタイトルをentry-descで取得できる
+;; - [x] 検査のタイトルをbehavior-descで取得できる
 ;; - [x] `(examples :function ...)`で検査内容を定義できる
-;; - [x] defentryの中身をパースできる
+;; - [x] behaviorの中身をパースできる
 ;; - [x] examplesマクロで定義した検査を実行できる
 ;; - [x] 検査の結果をstdioに即時出力する
 ;; - [x] 複数の検査を実行する (`(examples :function ...)`の中が複数)
@@ -72,9 +72,9 @@
 ;; - [x] `(examples :function ...)`でむしろ:for (1引数のみのケース) をやめる
 ;; - [x] `(examples :funcion ...)`に書く引数や返り値の値を評価する
 ;;     - つまり`(examples :function :for (1+ ) :returns 1)`が成功すること
-;; - [x] defentryで定義した検査を保持・一覧取得・クリアできる
-;; - [x] entryはsubjectで分類される
-;;     - catalogsリストの要素はsubject->entryリストのハッシュテーブル
+;; - [x] behaviorで定義した検査を保持・一覧取得・クリアできる
+;; - [x] behaviorはsubjectで分類される
+;;     - catalogsリストの要素はsubject->behaviorリストのハッシュテーブル
 ;;     - catalogsリストはなにかをキーにする必要はない…？ パッケージとか…？
 ;; - [ ] 検査の結果を収集する
 ;; - [ ] 収集した検査結果をstdioに書き出す
@@ -92,7 +92,7 @@
              (subject ()
                (push-log :check)
                (signal "signal a condition")))
-      (let ((spec (defentry "check flow is: preparation, checking and disposing"
+      (let ((spec (behavior "check flow is: preparation, checking and disposing"
                     :subject #'subject
                     :prepare (prepare)
                     :dispose (dispose)
@@ -101,12 +101,12 @@
         (check spec)
         (assert (equal '(:prepare :check :dispose) (reverse logs)))))))
 
-(defun spec.entry-desc ()
-  (let ((spec (defentry "spec description"
+(defun spec.behavior-desc ()
+  (let ((spec (behavior "spec description"
                 :subject #'oddp
                 (examples :function
                   :returns t :for (1)))))
-    (assert (string= (entry-desc spec) "spec description"))))
+    (assert (string= (behavior-desc spec) "spec description"))))
 
 (defun verify-malformed-examples-error-reason (body reason)
   (block check
@@ -197,84 +197,84 @@
     (assert (equal input '(1 2)))
     (assert (equal output '(1 2)))))
 
-(defun spec.parse-entry-body.empty-body-signaled-error ()
+(defun spec.parse-behavior-body.empty-body-signaled-error ()
   (let ((body '()))
     (block check
       (flet ((check-reason (c)
                (assert (string= (slot-value c 'reason) "empty"))
                (return-from check)))
-        (handler-bind ((malformed-entry-error #'check-reason))
-          (parse-entry body)
+        (handler-bind ((malformed-behavior-error #'check-reason))
+          (parse-behavior body)
           (assert nil))))))
 
-(defun spec.parse-entry-body.parse-subject ()
+(defun spec.parse-behavior-body.parse-subject ()
   (let ((body '(:subject #'oddp)))
-    (assert (eq (parse-entry body) '#'oddp))))
+    (assert (eq (parse-behavior body) '#'oddp))))
 
-(defun spec.parse-entry-body.parse-prepare ()
+(defun spec.parse-behavior-body.parse-prepare ()
   (let ((body '(:subject #'oddp
                 :prepare (identity 42))))
-    (assert (equal (multiple-value-list (parse-entry body))
+    (assert (equal (multiple-value-list (parse-behavior body))
                    '(#'oddp
                      (identity 42)
                      nil
                      nil)))))
 
-(defun spec.parse-entry-body.parse-dispose ()
+(defun spec.parse-behavior-body.parse-dispose ()
   (let ((body '(:subject #'oddp
                 :prepare (identity 42)
                 :dispose (identity 45))))
-    (assert (equal (multiple-value-list (parse-entry body))
+    (assert (equal (multiple-value-list (parse-behavior body))
                    '(#'oddp
                      (identity 42)
                      (identity 45)
                      nil)))))
 
-(defun spec.parse-entry-body.subject-is-required ()
+(defun spec.parse-behavior-body.subject-is-required ()
   (let ((body `(:prepare '(identity 42))))
     (block check
       (flet ((check-reason (c)
                (assert (string= (slot-value c 'reason) ":SUBJECT is required"))
                (return-from check)))
-        (handler-bind ((malformed-entry-error #'check-reason))
-          (parse-entry body))))))
+        (handler-bind ((malformed-behavior-error #'check-reason))
+          (parse-behavior body))))))
 
-(defun spec.parse-entry-body.parse-examples ()
+(defun spec.parse-behavior-body.parse-examples ()
   (let ((body '(:subject #'oddp
                 :prepare (identity 42)
                 (examples :function :returns t :for (1)))))
-    (assert (tree-equal (multiple-value-list (parse-entry body))
+    (assert (tree-equal (multiple-value-list (parse-behavior body))
                         '(#'oddp
                           (identity 42)
                           nil
                           (examples :function :returns t :for (1)))))))
 
 (defun spec.define-spec ()
-  (let ((spec (defentry "defining spec"
+  (let ((spec (behavior "defining spec"
                 :subject #'oddp
                 :prepare (print :ln)
                 (examples :function
                   :returns t :for (1)))))
-    (assert (string= (entry-desc spec) "defining spec"))
-    (assert (eq (entry-subject spec) #'oddp))
-    (assert (not (null (entry-check spec))))))
+    (assert (string= (behavior-desc spec) "defining spec"))
+    (assert (eq (behavior-subject spec) #'oddp))
+    (assert (not (null (behavior-check spec))))))
 
 (defun spec.check-spec-succeeds ()
-  (let ((spec (defentry "spec will succeed"
+  (let ((spec (behavior "spec will succeed"
                 :subject #'oddp
                 (examples :function
                   :returns t :for (1)))))
     (assert (equal (check spec) '(t)))))
 
 (defun spec.check-spec-fails ()
-  (let ((spec (defentry "spec will fail"
+  (let ((spec (behavior "spec will fail"
                 :subject #'oddp
                 (examples :function
                   :returns t :for (2)))))
     (assert (equal (check spec) '(nil)))))
 
 (defun spec.check-spec.with-multiple-io-pairs-succeeds ()
-  (let ((spec (defentry "all examples in spec will succeed"
+  (let ((spec (behavior "all examples in spec will succeed"
                 :subject #'oddp
                 (examples :function
                   :returns t :for (1)
@@ -286,24 +286,24 @@
   (flet ((odd-even (n)
            (let ((odd (oddp n)))
              (values odd (not odd)))))
-    (let ((spec (defentry "this will succeed"
+    (let ((spec (behavior "this will succeed"
                   :subject #'odd-even
                   (examples :function
                     :returns (values t nil) :for (1)))))
       (assert (equal (check spec) '(t))))
-    (let ((spec (defentry "this will fail"
+    (let ((spec (behavior "this will fail"
                   :subject #'odd-even
                   (examples :function
                     :returns (values t nil) :for (2)))))
       (assert (equal (check spec) '(nil))))
-    (let ((spec (defentry "this also will fail"
+    (let ((spec (behavior "this also will fail"
                   :subject #'odd-even
                   (examples :function
                     :returns (t nil) :for (2)))))
       (assert (equal (check spec) '(nil))))))
 
 (defun spec.output-spec-succeeded-result ()
-  (let ((spec (defentry "ODDP"
+  (let ((spec (behavior "ODDP"
                 :subject #'oddp
                 (examples :function
                   :returns t :for (1)))))
@@ -312,7 +312,7 @@
                      (format nil "a spec \"ODDP\" is succeeded~%")))))
 
 (defun spec.output-spec-failed-result ()
-  (let ((spec (defentry "ODDP"
+  (let ((spec (behavior "ODDP"
                 :subject #'oddp
                 (examples :function
                   :returns t :for (2)))))
@@ -321,7 +321,7 @@
                      (format nil "a spec \"ODDP\" is failed~%")))))
 
 (defun spec.store-and-clear-catalogs ()
-  (let ((spec (defentry "IDENTITY"
+  (let ((spec (behavior "IDENTITY"
                 :subject #'identity
                 (examples :function
                   :returns t :for (t)))))
@@ -329,21 +329,21 @@
     (clear-catalogs)
     (assert (zerop (hash-table-count (all-catalogs))))))
 
-(defun spec.get-entry-with-subject ()
+(defun spec.get-behavior-with-subject ()
   (clear-catalogs)
-  (let ((spec1 (defentry "test 1 for #'oddp"
+  (let ((spec1 (behavior "test 1 for #'oddp"
                  :subject #'oddp))
-        (spec2 (defentry "test 2 for #'oddp"
+        (spec2 (behavior "test 2 for #'oddp"
                  :subject #'oddp)))
     (assert (typep (all-catalogs) 'hash-table))
     (assert (typep (gethash #'oddp (all-catalogs)) 'list))
-    (let ((oddp-entries (gethash #'oddp (all-catalogs))))
-      (assert (string= (entry-desc (elt oddp-entries 0)) "test 1 for #'oddp"))
-      (assert (string= (entry-desc (elt oddp-entries 1)) "test 2 for #'oddp")))))
+    (let ((oddp-behaviors (gethash #'oddp (all-catalogs))))
+      (assert (string= (behavior-desc (elt oddp-behaviors 0)) "test 1 for #'oddp"))
+      (assert (string= (behavior-desc (elt oddp-behaviors 1)) "test 2 for #'oddp")))))
 
 (spec.check-flow)
 
-(spec.entry-desc)
+(spec.behavior-desc)
 
 (spec.parse-function-exampels.malformed.empty)
 (spec.parse-function-exampels.parse-io-pair)
@@ -354,12 +354,12 @@
 (spec.define-example)
 (spec.define-example.evaluate-io-values)
 
-(spec.parse-entry-body.empty-body-signaled-error)
-(spec.parse-entry-body.parse-subject)
-(spec.parse-entry-body.subject-is-required)
-(spec.parse-entry-body.parse-prepare)
-(spec.parse-entry-body.parse-dispose)
-(spec.parse-entry-body.parse-examples)
+(spec.parse-behavior-body.empty-body-signaled-error)
+(spec.parse-behavior-body.parse-subject)
+(spec.parse-behavior-body.subject-is-required)
+(spec.parse-behavior-body.parse-prepare)
+(spec.parse-behavior-body.parse-dispose)
+(spec.parse-behavior-body.parse-examples)
 
 (spec.define-spec)
 
@@ -372,4 +372,4 @@
 (spec.output-spec-failed-result)
 
 (spec.store-and-clear-catalogs)
-(spec.get-entry-with-subject)
+(spec.get-behavior-with-subject)
