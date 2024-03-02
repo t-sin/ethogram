@@ -91,7 +91,7 @@
              (dispose () (push-log :dispose))
              (subject ()
                (push-log :check)
-               (signal "signal a condition")))
+               (signal "a condition to check a ethogram flow")))
       (let ((spec (behavior "check flow is: preparation, checking and disposing"
                     :subject #'subject
                     :prepare (prepare)
