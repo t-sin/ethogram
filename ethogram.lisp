@@ -158,7 +158,8 @@
     :do (unwind-protect
              (flet ((do-nothing (c)
                       (declare (ignorable c))
-                      (format t "~s" c)
+                      (format t "~%SIGNALED WHILE CHECKING:~%  ~s~%  IN BEHAVIOR ~s~%"
+                              c (behavior-desc behavior))
                       (return-from check)))
                (handler-bind ((condition #'do-nothing))
                  (setf actual (multiple-value-list (funcall (behavior-check behavior) input)))
