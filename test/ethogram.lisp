@@ -74,8 +74,8 @@
 ;;     - つまり`(examples :function :for (1+ ) :returns 1)`が成功すること
 ;; - [x] defentryで定義した検査を保持・一覧取得・クリアできる
 ;; - [x] entryはsubjectで分類される
-;;     - cataloguesリストの要素はsubject->entryリストのハッシュテーブル
-;;     - cataloguesリストはなにかをキーにする必要はない…？ パッケージとか…？
+;;     - catalogsリストの要素はsubject->entryリストのハッシュテーブル
+;;     - catalogsリストはなにかをキーにする必要はない…？ パッケージとか…？
 ;; - [ ] 検査の結果を収集する
 ;; - [ ] 収集した検査結果をstdioに書き出す
 ;; - [ ] 複数の検査を実行する (`(examples  ...)`自体が複数)
@@ -320,24 +320,24 @@
                        (check spec))
                      (format nil "a spec \"ODDP\" is failed~%")))))
 
-(defun spec.store-and-clear-catalogues ()
+(defun spec.store-and-clear-catalogs ()
   (let ((spec (defentry "IDENTITY"
                 :subject #'identity
                 (examples :function
                   :returns t :for (t)))))
-    (assert (not (zerop (hash-table-count (all-catalogues)))))
-    (clear-catalogues)
-    (assert (zerop (hash-table-count (all-catalogues))))))
+    (assert (not (zerop (hash-table-count (all-catalogs)))))
+    (clear-catalogs)
+    (assert (zerop (hash-table-count (all-catalogs))))))
 
 (defun spec.get-entry-with-subject ()
-  (clear-catalogues)
+  (clear-catalogs)
   (let ((spec1 (defentry "test 1 for #'oddp"
                  :subject #'oddp))
         (spec2 (defentry "test 2 for #'oddp"
                  :subject #'oddp)))
-    (assert (typep (all-catalogues) 'hash-table))
-    (assert (typep (gethash #'oddp (all-catalogues)) 'list))
-    (let ((oddp-entries (gethash #'oddp (all-catalogues))))
+    (assert (typep (all-catalogs) 'hash-table))
+    (assert (typep (gethash #'oddp (all-catalogs)) 'list))
+    (let ((oddp-entries (gethash #'oddp (all-catalogs))))
       (assert (string= (entry-desc (elt oddp-entries 0)) "test 1 for #'oddp"))
       (assert (string= (entry-desc (elt oddp-entries 1)) "test 2 for #'oddp")))))
 
@@ -371,5 +371,5 @@
 (spec.output-spec-succeeded-result)
 (spec.output-spec-failed-result)
 
-(spec.store-and-clear-catalogues)
+(spec.store-and-clear-catalogs)
 (spec.get-entry-with-subject)

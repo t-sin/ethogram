@@ -19,14 +19,14 @@
    ;; checking
    :check
    ;; introspection
-   :all-catalogues
-   :clear-catalogues))
+   :all-catalogs
+   :clear-catalogs))
 (in-package :ethogram)
 
-(defparameter *catalogues* (make-hash-table))
-(defun all-catalogues () *catalogues*)
-(defun clear-catalogues ()
-  (setf *catalogues* (make-hash-table)))
+(defparameter *catalogs* (make-hash-table))
+(defun all-catalogs () *catalogs*)
+(defun clear-catalogs ()
+  (setf *catalogs* (make-hash-table)))
 
 (defstruct function-examples
   input output)
@@ -133,7 +133,7 @@
                                    ,@(when dispose
                                        `(:dispose (lambda () ,dispose)))
                                    :examples ,$examples)))
-         (alexandria:nconcf (gethash ,$subject *catalogues*) (list ,$entry))
+         (alexandria:nconcf (gethash ,$subject *catalogs*) (list ,$entry))
          ,$entry))))
 
 (defgeneric prepare (entry))
