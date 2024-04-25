@@ -209,7 +209,11 @@
 
 (defun spec.parse-behavior-body.parse-subject ()
   (let ((body '(:subject #'oddp)))
-    (assert (eq (parse-behavior body) '#'oddp))))
+    (assert (equal (multiple-value-list (parse-behavior body))
+                   '(#'oddp
+                     nil
+                     nil
+                     nil)))))
 
 (defun spec.parse-behavior-body.parse-prepare ()
   (let ((body '(:subject #'oddp
@@ -341,35 +345,78 @@
       (assert (string= (behavior-desc (elt oddp-behaviors 0)) "test 1 for #'oddp"))
       (assert (string= (behavior-desc (elt oddp-behaviors 1)) "test 2 for #'oddp")))))
 
-(spec.check-flow)
+(defun spec.collect-empty-examples()
+  (clear-catalogs)
+  (let* ((spec (behavior "test: collect results with empty examples"
+                 :subject #'oddp))
+         (result (check spec)))
+    (assert (null result))))
 
-(spec.behavior-desc)
+(defun spec.collect-one-results ()
+  (clear-catalogs)
+  (let* ((spec (behavior "test: collect results with some examples"
+                 :subject #'oddp
+                 (examples :function
+                   :returns t :for (1))))
+         (result (check spec)))
+    (assert (not (null result)))
+    (assert (= (length result) 1))
+    (assert (eq (first result) t))))
 
-(spec.parse-function-exampels.malformed.empty)
-(spec.parse-function-exampels.parse-io-pair)
-(spec.parse-function-exapmles.allow-values-for-output)
-(spec.parse-function-exampels.malformed.incomplete-io-pair)
-(spec.parse-function-examples.multiple-pairs)
+(defun spec.collect-some-spec-results ()
+  (clear-catalogs)
+  (let* ((spec1 (behavior "test1: oddp"
+                  :subject #'oddp
+                  (examples :function
+                    :returns t :for (1)
+                    :returns nil :for (2))))
+         (spec2 (behavior "test2: evenp"
+                  :subject #'evenp
+                  (examples :function
+                    :returns nil :for (1))
+                  (examples :function
+                    :returns nil :for (3))))
+         (result1 (check spec1))
+         (result2 (check spec2)))
+    (assert (= (length result1) 2))
+    ;; TODO: kokode ochiru yo ;p
+    (assert (= (length result2) 2))))
 
-(spec.define-example)
-(spec.define-example.evaluate-io-values)
+(defun check-specs ()
+  (spec.check-flow)
 
-(spec.parse-behavior-body.empty-body-signaled-error)
-(spec.parse-behavior-body.parse-subject)
-(spec.parse-behavior-body.subject-is-required)
-(spec.parse-behavior-body.parse-prepare)
-(spec.parse-behavior-body.parse-dispose)
-(spec.parse-behavior-body.parse-examples)
+  (spec.behavior-desc)
 
-(spec.define-spec)
+  (spec.parse-function-exampels.malformed.empty)
+  (spec.parse-function-exampels.parse-io-pair)
+  (spec.parse-function-exapmles.allow-values-for-output)
+  (spec.parse-function-exampels.malformed.incomplete-io-pair)
+  (spec.parse-function-examples.multiple-pairs)
 
-(spec.check-spec-succeeds)
-(spec.check-spec-fails)
-(spec.check-spec.with-multiple-io-pairs-succeeds)
-(spec.check-spec.with-multiple-values)
+  (spec.define-example)
+  (spec.define-example.evaluate-io-values)
 
-(spec.output-spec-succeeded-result)
-(spec.output-spec-failed-result)
+  (spec.parse-behavior-body.empty-body-signaled-error)
+  (spec.parse-behavior-body.parse-subject)
+  (spec.parse-behavior-body.subject-is-required)
+  (spec.parse-behavior-body.parse-prepare)
+  (spec.parse-behavior-body.parse-dispose)
+  (spec.parse-behavior-body.parse-examples)
 
-(spec.store-and-clear-catalogs)
-(spec.get-behavior-with-subject)
+  (spec.define-spec)
+
+  (spec.check-spec-succeeds)
+  (spec.check-spec-fails)
+  (spec.check-spec.with-multiple-io-pairs-succeeds)
+  (spec.check-spec.with-multiple-values)
+
+  (spec.output-spec-succeeded-result)
+  (spec.output-spec-failed-result)
+
+  (spec.store-and-clear-catalogs)
+  (spec.get-behavior-with-subject)
+
+  (spec.collect-empty-examples)
+  (spec.collect-one-results)
+  (spec.collect-some-spec-results)
+  )
